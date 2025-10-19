@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Minimal French translations (ASCII-only) to unblock build -->
+    <string name="app_name">OrderApp</string>
+    <string name="save">Enregistrer</string>
+    <string name="cancel">Annuler</string>
+    <string name="delete">Supprimer</string>
+    <string name="edit">Modifier</string>
+    <string name="add">Ajouter</string>
+    <string name="menu">Menu</string>
+    <string name="scanning_for_barcode">Recherche de code-barres...</string>
+    <string name="failed_to_export_pdf">Echec export PDF : %s</string>
+    <string name="error_occurred">Une erreur est survenue</string>
+    <!-- App-specific translations added to avoid unresolved references -->
+    <string name="product_details">Details du produit</string>
+    <string name="go_back">Retour</string>
+    <string name="scan_another_product">Scanner un autre produit</string>
+    <string name="total_items">Articles totaux : %d</string>
+    <string name="inventory_value">Valeur de inventaire : %s</string>
+    <string name="low_stock">Stock faible : %d</string>
+    <string name="scan_barcode">Scanner le code-barres</string>
+    <string name="scan_product_barcode">Scanner le code-barres du produit</string>
+    <string name="scanned">Scanne : %s</string>
+    <string name="grant_permission">Accorder la permission</string>
+    <string name="open_settings">Ouvrir les parametres</string>
+    <string name="search_hint">Rechercher par nom ou code-barres</string>
+</resources>
