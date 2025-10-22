@@ -56,7 +56,7 @@ fun OrderChooseDelivererScreen(
         },*/
         topBar = {
             TopAppBar(
-                title = { Text("Order Overview", ) },
+                title = { Text("Section des produits") },
                 colors = TopAppBarDefaults.mediumTopAppBarColors()
             )
         }
@@ -75,7 +75,7 @@ fun OrderChooseDelivererScreen(
                 onValueChange = { newQuery -> orderChooseDelivererViewModel.onSearchQueryChange(newQuery) },
                 label = { Text("Search Deliverer") },
                 singleLine = true,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = TextFieldDefaults.colors(
                     //focusedBorderColor = orange,
                   //  cursorColor = orange,
                    // textColor = gray

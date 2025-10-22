@@ -49,7 +49,7 @@ fun DelivererScreen(
     Scaffold(
         topBar =  {
             TopAppBar(
-                title = { Text("Deliverer") },
+                title = { Text("Fournisseur") },
                 navigationIcon = {
                     IconButton(onClick = { scope.launch { drawerState.open() } }) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
@@ -63,7 +63,7 @@ fun DelivererScreen(
                 editingDeliverer.value = null
                 name.value = ""
             }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Deliverer")
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Ajouter Fournisseur")
             }
         }
     ) { paddingValues ->
@@ -109,14 +109,14 @@ fun DelivererScreen(
                                 }) {
                                     Icon(
                                         imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit",
+                                        contentDescription = "Modifier",
                                         tint = Color.Blue
                                     )
                                 }
                                 IconButton(onClick = { delivererViewModel.delete(deliverer) }) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete",
+                                        contentDescription = "Effacer",
                                         tint = Color.Red
                                     )
                                 }
@@ -144,14 +144,14 @@ fun DelivererForm(deliverer: Deliverer?, onSave: (String) -> Unit) {
             value = name.value,
             onValueChange = { name.value = it },
             singleLine = true,
-            placeholder = { Text(text = "Enter Deliverer Name") }
+            placeholder = { Text(text = "Nom du Fournisseur") }
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onSave.invoke(name.value) }
         ) {
-            Text(text = if (deliverer == null) "Save" else "Update")
+            Text(text = if (deliverer == null) "Enregister" else "Modifier")
         }
     }
 }

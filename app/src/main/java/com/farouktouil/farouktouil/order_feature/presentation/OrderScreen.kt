@@ -70,7 +70,7 @@ fun OrderScreen(
             },
             topBar = {
                 TopAppBar(
-                    title = { Text("Order overview") },
+                    title = { Text("Commandes") },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
@@ -84,7 +84,7 @@ fun OrderScreen(
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("There are no orders yet")
+                    Text("Pas de commandes")
                 }
             } else {
                 LazyColumn(

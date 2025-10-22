@@ -49,12 +49,12 @@ fun OrderChooseProductsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Product Section") },
+                title = { Text("Section des produits") },
                 actions = {
                     IconButton(onClick = { navController.navigate(
                         ScreenRoutes.ProductScreen.route + "/${delivererId}"
                     ) }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Product")
+                        Icon(Icons.Default.Add, contentDescription = "Ajouter un produit")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors()
@@ -87,10 +87,7 @@ fun OrderChooseProductsScreen(
                 value = searchQuery,
                 onValueChange = { viewModel.onProductSearchQueryChange(it) },
                 label = { Text("Search Product") },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                      focusedBorderColor = primaryContainerLight,
-                     cursorColor = primaryContainerLight
-                ),
+                colors = TextFieldDefaults.colors(),
                 maxLines = 1,
                 modifier = Modifier.fillMaxWidth()
             )
