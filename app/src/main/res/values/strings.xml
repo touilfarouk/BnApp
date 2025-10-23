@@ -16,7 +16,7 @@
     <string name="nav_products">Produits</string>
     <string name="nav_contact">Contact</string>
     <string name="nav_barcode_generator">Générateur de codes-barres</string>
-    <string name="app_version">OrderApp v1.0</string>
+    <string name="app_version">BnederApp v1.0</string>
 
     <!-- Écran des produits -->
     <string name="products">Produits</string>
