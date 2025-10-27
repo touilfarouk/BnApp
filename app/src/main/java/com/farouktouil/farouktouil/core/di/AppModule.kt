@@ -1,5 +1,6 @@
 package com.farouktouil.farouktouil.core.di
 
+import com.farouktouil.farouktouil.consultation_feature.data.remote.ConsultationApiService
 import com.farouktouil.farouktouil.deliverer_feature.data.remote.DelivererApiService
 import com.farouktouil.farouktouil.personnel_feature.data.remote.PersonnelApiService
 import dagger.Module
@@ -43,16 +44,23 @@ object AppModule {
     @Provides
     @Singleton
     @PersonnelApi
-    fun providePersonnelRetrofit(): Retrofit {
+    fun providePersonnelOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                }
+            )
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @PersonnelApi
+    fun providePersonnelRetrofit(@PersonnelApi okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://bneder.dz/")
-            .client(OkHttpClient.Builder()
-                .addInterceptor(
-                    HttpLoggingInterceptor().apply {
-                        level = HttpLoggingInterceptor.Level.BODY
-                    }
-                )
-                .build())
+            .baseUrl("https://bneder.dz/api/tenders/")
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -67,5 +75,11 @@ object AppModule {
     @Singleton
     fun providePersonnelApiService(@PersonnelApi personnelRetrofit: Retrofit): PersonnelApiService {
         return personnelRetrofit.create(PersonnelApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideConsultationApiService(@PersonnelApi personnelRetrofit: Retrofit): ConsultationApiService {
+        return personnelRetrofit.create(ConsultationApiService::class.java)
     }
 }

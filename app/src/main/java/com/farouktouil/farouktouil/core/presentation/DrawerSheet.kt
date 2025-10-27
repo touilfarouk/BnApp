@@ -152,6 +152,25 @@ fun DrawerSheet(navController: NavController, drawerState: DrawerState, scope: C
                     },
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
+
+                Divider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                // Appel à Consultation
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.nav_appel_consultation), style = MaterialTheme.typography.titleMedium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(ScreenRoutes.AppelConsultationScreen.route) {
+                            popUpTo(ScreenRoutes.AppelConsultationScreen.route) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
         }
 

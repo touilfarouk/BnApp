@@ -1,4 +1,3 @@
-
 package com.farouktouil.farouktouil.core.di
 
 import javax.inject.Qualifier

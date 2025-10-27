@@ -15,7 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.farouktouil.farouktouil.barcode_feature.presentation.BarcodeGeneratorScreen
-
+import com.farouktouil.farouktouil.consultation_feature.presentation.AppelConsultationScreen
 import com.farouktouil.farouktouil.deliverer_feature.presentation.DelivererScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseDelivererScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseProductsScreen
@@ -34,10 +34,7 @@ fun Navigation() {
     val scope = rememberCoroutineScope()
 
     ModalNavigationDrawer(
-        modifier = Modifier
-
-            .fillMaxHeight(),
-
+        modifier = Modifier.fillMaxHeight(),
         drawerState = drawerState,
         drawerContent = {
             DrawerSheet(navController, drawerState, scope)
@@ -84,8 +81,8 @@ fun Navigation() {
                 )
             }
 
-            composable(ScreenRoutes.PersonnelScreen.route) {
-                PersonnelScreen(navController = navController, drawerState = drawerState, scope = scope)
+            composable(ScreenRoutes.AppelConsultationScreen.route) {
+                AppelConsultationScreen(navController = navController, drawerState = drawerState, scope = scope)
             }
 
             composable(ScreenRoutes.BarcodeGeneratorScreen.route) {
@@ -152,6 +149,7 @@ sealed class ScreenRoutes(val route:String){
     object ProductScreen:ScreenRoutes("product_screen")
     object ContactScreen:ScreenRoutes("contact_screen")
     object PersonnelScreen:ScreenRoutes("personnel_screen")
+    object AppelConsultationScreen:ScreenRoutes("appel_consultation_screen")
     object BarcodeGeneratorScreen:ScreenRoutes("barcode_generator_screen")
     object BarcodeScannerScreen:ScreenRoutes("barcode_scanner_screen")
     object ScanProductScreen:ScreenRoutes("scan_product_screen")
