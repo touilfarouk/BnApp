@@ -1,18 +1,16 @@
-package com.farouktouil.farouktouil.contact_feature.presentation
+package com.farouktouil.farouktouil.personnel_feature.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,14 +26,14 @@ fun PersonnelScreen(
     navController: NavController,
     drawerState: DrawerState,
     scope: CoroutineScope,
-    viewModel: ContactViewModel = hiltViewModel()
+    viewModel: PersonnelViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.value
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Our Team") },
+                title = { Text("Notre Personnel") },
                 navigationIcon = {
                     IconButton(onClick = { scope.launch { drawerState.open() } }) {
                         Icon(
@@ -66,7 +64,7 @@ fun PersonnelScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Meet Our Team",
+                    text = "Notre Personnel",
                     color = Color.White,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
@@ -109,7 +107,7 @@ fun PersonnelScreen(
                             modifier = Modifier.padding(top = 8.dp)
                         )
                         Button(
-                            onClick = { viewModel.onEvent(ContactEvent.RefreshPersonnel) },
+                            onClick = { viewModel.onEvent(PersonnelEvent.RefreshPersonnel) },
                             modifier = Modifier.padding(top = 16.dp)
                         ) {
                             Text("Retry")
@@ -124,7 +122,7 @@ fun PersonnelScreen(
                     )
                 ) {
                     Text(
-                        text = "No team members found.",
+                        text = "Pas de personnel à afficher.",
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -153,22 +151,28 @@ fun PersonnelScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Text(
-                                text = person.displayFunction,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = person.displayStructure,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = person.email,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Medium
-                            )
+                            person.displayFunction?.let {
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            person.displayStructure?.let {
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            person.email?.let {
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }

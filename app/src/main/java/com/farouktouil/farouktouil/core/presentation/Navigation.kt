@@ -15,11 +15,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.farouktouil.farouktouil.barcode_feature.presentation.BarcodeGeneratorScreen
-import com.farouktouil.farouktouil.contact_feature.presentation.PersonnelScreen
+
 import com.farouktouil.farouktouil.deliverer_feature.presentation.DelivererScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseDelivererScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseProductsScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderScreen
+import com.farouktouil.farouktouil.personnel_feature.presentation.PersonnelScreen
 import com.farouktouil.farouktouil.product_feature.presentation.BarcodeScannerActivity
 import com.farouktouil.farouktouil.product_feature.presentation.BarcodeScannerScreen
 import com.farouktouil.farouktouil.product_feature.presentation.ScanProductScreen

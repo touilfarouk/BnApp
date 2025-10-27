@@ -15,7 +15,7 @@ import com.farouktouil.farouktouil.core.data.local.entities.ProductEntity
         ProductEntity::class
     ],
     version = 27,
-    //exportSchema = false
+    exportSchema = false
 )
 abstract class AppDatabase:RoomDatabase() {
     abstract fun orderDao():OrderDao

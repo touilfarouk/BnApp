@@ -1,8 +1,7 @@
 package com.farouktouil.farouktouil.core.di
 
 import com.farouktouil.farouktouil.deliverer_feature.data.remote.DelivererApiService
-import com.farouktouil.farouktouil.contact_feature.data.remote.PersonnelApiService
-import com.farouktouil.farouktouil.contact_feature.data.remote.PersonnelRemoteDataSource
+import com.farouktouil.farouktouil.personnel_feature.data.remote.PersonnelApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -68,11 +67,5 @@ object AppModule {
     @Singleton
     fun providePersonnelApiService(@PersonnelApi personnelRetrofit: Retrofit): PersonnelApiService {
         return personnelRetrofit.create(PersonnelApiService::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun providePersonnelRemoteDataSource(apiService: PersonnelApiService): PersonnelRemoteDataSource {
-        return PersonnelRemoteDataSource(apiService)
     }
 }

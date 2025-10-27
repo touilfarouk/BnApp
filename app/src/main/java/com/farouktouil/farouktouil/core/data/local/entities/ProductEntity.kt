@@ -2,11 +2,8 @@ package com.farouktouil.farouktouil.core.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
-
-
-
-
 
 @Entity(
     tableName = "products",
@@ -15,7 +12,8 @@ import androidx.room.PrimaryKey
         parentColumns = ["delivererId"],
         childColumns = ["belongsToDeliverer"],
         onDelete = ForeignKey.CASCADE
-    )]
+    )],
+    indices = [Index(value = ["belongsToDeliverer"])]
 )
 data class ProductEntity(
     @PrimaryKey(autoGenerate = true)
