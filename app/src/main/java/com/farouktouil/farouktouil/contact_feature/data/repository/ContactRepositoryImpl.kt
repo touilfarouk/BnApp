@@ -2,10 +2,14 @@ package com.farouktouil.farouktouil.contact_feature.data.repository
 
 import android.util.Log
 import com.farouktouil.farouktouil.contact_feature.domain.model.ContactMessage
+import com.farouktouil.farouktouil.contact_feature.domain.model.Personnel
 import com.farouktouil.farouktouil.contact_feature.domain.repository.ContactInfo
 import com.farouktouil.farouktouil.contact_feature.domain.repository.ContactRepository
+import com.farouktouil.farouktouil.contact_feature.data.remote.PersonnelRemoteDataSource
 
-class ContactRepositoryImpl : ContactRepository {
+class ContactRepositoryImpl(
+    private val personnelRemoteDataSource: PersonnelRemoteDataSource
+) : ContactRepository {
 
     override suspend fun submitContactMessage(contactMessage: ContactMessage): Result<Unit> {
         return try {
@@ -34,5 +38,16 @@ class ContactRepositoryImpl : ContactRepository {
 
     override suspend fun getContactInfo(): ContactInfo {
         return ContactInfo()
+    }
+
+    override suspend fun getPersonnel(): Result<List<Personnel>> {
+        return try {
+            val personnel = personnelRemoteDataSource.getPersonnel()
+            Log.d("ContactRepository", "Personnel fetched successfully: ${personnel.size} items")
+            Result.success(personnel)
+        } catch (e: Exception) {
+            Log.e("ContactRepository", "Error fetching personnel", e)
+            Result.failure(e)
+        }
     }
 }

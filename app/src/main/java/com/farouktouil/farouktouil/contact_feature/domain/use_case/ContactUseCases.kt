@@ -1,6 +1,7 @@
 package com.farouktouil.farouktouil.contact_feature.domain.use_case
 
 import com.farouktouil.farouktouil.contact_feature.domain.model.ContactMessage
+import com.farouktouil.farouktouil.contact_feature.domain.model.Personnel
 import com.farouktouil.farouktouil.contact_feature.domain.repository.ContactRepository
 
 class SubmitContactMessageUseCase(
@@ -26,4 +27,12 @@ class GetContactInfoUseCase(
     private val contactRepository: ContactRepository
 ) {
     suspend operator fun invoke() = contactRepository.getContactInfo()
+}
+
+class GetPersonnelUseCase(
+    private val contactRepository: ContactRepository
+) {
+    suspend operator fun invoke(): Result<List<Personnel>> {
+        return contactRepository.getPersonnel()
+    }
 }

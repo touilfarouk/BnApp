@@ -1,12 +1,15 @@
 package com.farouktouil.farouktouil.contact_feature.domain.repository
 
 import com.farouktouil.farouktouil.contact_feature.domain.model.ContactMessage
+import com.farouktouil.farouktouil.contact_feature.domain.model.Personnel
 
 interface ContactRepository {
 
     suspend fun submitContactMessage(contactMessage: ContactMessage): Result<Unit>
 
     suspend fun getContactInfo(): ContactInfo
+
+    suspend fun getPersonnel(): Result<List<Personnel>>
 }
 
 data class ContactInfo(

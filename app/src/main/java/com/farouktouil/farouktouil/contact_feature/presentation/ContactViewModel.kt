@@ -5,7 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.farouktouil.farouktouil.contact_feature.domain.model.ContactMessage
+import com.farouktouil.farouktouil.contact_feature.domain.model.Personnel
 import com.farouktouil.farouktouil.contact_feature.domain.use_case.GetContactInfoUseCase
+import com.farouktouil.farouktouil.contact_feature.domain.use_case.GetPersonnelUseCase
 import com.farouktouil.farouktouil.contact_feature.domain.use_case.SubmitContactMessageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -14,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ContactViewModel @Inject constructor(
     private val submitContactMessageUseCase: SubmitContactMessageUseCase,
-    private val getContactInfoUseCase: GetContactInfoUseCase
+    private val getContactInfoUseCase: GetContactInfoUseCase,
+    private val getPersonnelUseCase: GetPersonnelUseCase
 ) : ViewModel() {
 
     private val _state = mutableStateOf(ContactState())
@@ -22,6 +25,7 @@ class ContactViewModel @Inject constructor(
 
     init {
         loadContactInfo()
+        loadPersonnel()
     }
 
     fun onEvent(event: ContactEvent) {
@@ -58,6 +62,9 @@ class ContactViewModel @Inject constructor(
             }
             is ContactEvent.SubmitMessage -> {
                 submitMessage()
+            }
+            is ContactEvent.RefreshPersonnel -> {
+                loadPersonnel()
             }
         }
     }
@@ -113,6 +120,26 @@ class ContactViewModel @Inject constructor(
             }
         }
     }
+
+    private fun loadPersonnel() {
+        _state.value = _state.value.copy(isLoadingPersonnel = true)
+
+        viewModelScope.launch {
+            getPersonnelUseCase()
+                .onSuccess { personnelList ->
+                    _state.value = _state.value.copy(
+                        personnel = personnelList,
+                        isLoadingPersonnel = false
+                    )
+                }
+                .onFailure { error ->
+                    _state.value = _state.value.copy(
+                        isLoadingPersonnel = false,
+                        personnelError = error.message ?: "Failed to load personnel"
+                    )
+                }
+        }
+    }
 }
 
 data class ContactState(
@@ -130,7 +157,10 @@ data class ContactState(
     val isSuccess: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null,
-    val contactInfo: com.farouktouil.farouktouil.contact_feature.domain.repository.ContactInfo = com.farouktouil.farouktouil.contact_feature.domain.repository.ContactInfo()
+    val contactInfo: com.farouktouil.farouktouil.contact_feature.domain.repository.ContactInfo = com.farouktouil.farouktouil.contact_feature.domain.repository.ContactInfo(),
+    val personnel: List<Personnel> = emptyList(),
+    val isLoadingPersonnel: Boolean = false,
+    val personnelError: String? = null
 )
 
 sealed class ContactEvent {
@@ -140,4 +170,5 @@ sealed class ContactEvent {
     data class SubjectChanged(val subject: String) : ContactEvent()
     data class MessageChanged(val message: String) : ContactEvent()
     object SubmitMessage : ContactEvent()
+    object RefreshPersonnel : ContactEvent()
 }
