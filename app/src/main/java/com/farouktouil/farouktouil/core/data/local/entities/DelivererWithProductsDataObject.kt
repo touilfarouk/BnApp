@@ -9,5 +9,5 @@ data class DelivererWithProductsDataObject(
         parentColumn = "delivererId",
         entityColumn = "belongsToDeliverer"
     )
-    val products:List<ProductEntity>
+    val products: List<ProductEntity>
 )

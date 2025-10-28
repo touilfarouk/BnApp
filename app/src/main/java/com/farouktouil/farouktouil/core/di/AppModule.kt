@@ -59,6 +59,30 @@ object AppModule {
     @PersonnelApi
     fun providePersonnelRetrofit(@PersonnelApi okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
+            .baseUrl("https://bneder.dz/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @ConsultationApi
+    fun provideConsultationOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                }
+            )
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @ConsultationApi
+    fun provideConsultationRetrofit(@ConsultationApi okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
             .baseUrl("https://bneder.dz/api/tenders/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
@@ -79,7 +103,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideConsultationApiService(@PersonnelApi personnelRetrofit: Retrofit): ConsultationApiService {
-        return personnelRetrofit.create(ConsultationApiService::class.java)
+    fun provideConsultationApiService(@ConsultationApi consultationRetrofit: Retrofit): ConsultationApiService {
+        return consultationRetrofit.create(ConsultationApiService::class.java)
     }
 }

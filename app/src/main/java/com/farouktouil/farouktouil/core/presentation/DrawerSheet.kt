@@ -171,6 +171,25 @@ fun DrawerSheet(navController: NavController, drawerState: DrawerState, scope: C
                     },
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
+
+                Divider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                // Barcode Generator
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.nav_barcode_generator), style = MaterialTheme.typography.titleMedium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(ScreenRoutes.BarcodeGeneratorScreen.route) {
+                            popUpTo(ScreenRoutes.BarcodeGeneratorScreen.route) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
         }
 
