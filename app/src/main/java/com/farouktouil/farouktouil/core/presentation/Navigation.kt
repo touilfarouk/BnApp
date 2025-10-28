@@ -1,14 +1,12 @@
 package com.farouktouil.farouktouil.core.presentation
 
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,7 +19,6 @@ import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseDeliver
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseProductsScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderScreen
 import com.farouktouil.farouktouil.personnel_feature.presentation.PersonnelScreen
-import com.farouktouil.farouktouil.barcode_feature.presentation.BarcodeGeneratorScreen
 import com.farouktouil.farouktouil.product_feature.presentation.BarcodeScannerScreen
 import com.farouktouil.farouktouil.product_feature.presentation.ScanProductScreen
 import com.farouktouil.farouktouil.product_feature.presentation.ProductDetailsScreen
@@ -83,7 +80,6 @@ fun Navigation() {
 
             composable(ScreenRoutes.PersonnelScreen.route) {
                 PersonnelScreen(
-                    navController = navController,
                     drawerState = drawerState,
                     scope = scope
                 )

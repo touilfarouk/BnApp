@@ -6,6 +6,9 @@ import com.farouktouil.farouktouil.core.data.local.AppDatabase
 import com.farouktouil.farouktouil.core.data.local.DelivererDao
 import com.farouktouil.farouktouil.core.data.local.OrderDao
 import com.farouktouil.farouktouil.core.data.local.ProductDao
+
+import com.farouktouil.farouktouil.personnel_feature.data.local.dao.PersonnelDao
+import com.farouktouil.farouktouil.personnel_feature.data.local.dao.RemoteKeysDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -43,5 +46,17 @@ object DatabaseModule {
     @Singleton
     fun provideDelivererDao(appDatabase: AppDatabase): DelivererDao {
         return appDatabase.delivererDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providePersonnelDao(appDatabase: AppDatabase): PersonnelDao {
+        return appDatabase.personnelDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRemoteKeysDao(appDatabase: AppDatabase): RemoteKeysDao {
+        return appDatabase.remoteKeysDao()
     }
 }

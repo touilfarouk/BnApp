@@ -88,6 +88,7 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-paging:$room_version")
 
     implementation("com.opencsv:opencsv:5.8")
 
@@ -107,6 +108,12 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+// Jetpack Paging 3 (for Kotlin coroutines)
+// Paging runtime
+    implementation("androidx.paging:paging-runtime:3.3.2")
+// Paging for Jetpack Compose
+    implementation("androidx.paging:paging-compose:3.3.2")
+
 
     // ZXing for QR code scanning
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")

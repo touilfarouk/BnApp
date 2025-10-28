@@ -1,8 +1,8 @@
 package com.farouktouil.farouktouil.personnel_feature.di
 
-import com.farouktouil.farouktouil.personnel_feature.data.repository.PersonnelRepositoryImpl
-import com.farouktouil.farouktouil.personnel_feature.data.remote.PersonnelRemoteDataSource
+import com.farouktouil.farouktouil.core.data.local.AppDatabase
 import com.farouktouil.farouktouil.personnel_feature.data.remote.PersonnelApiService
+import com.farouktouil.farouktouil.personnel_feature.data.repository.PersonnelRepositoryImpl
 import com.farouktouil.farouktouil.personnel_feature.domain.repository.PersonnelRepository
 import com.farouktouil.farouktouil.personnel_feature.domain.use_case.GetPersonnelUseCase
 import dagger.Module
@@ -15,15 +15,11 @@ import dagger.hilt.android.components.ViewModelComponent
 object PersonnelModule {
 
     @Provides
-    fun providePersonnelRemoteDataSource(apiService: PersonnelApiService): PersonnelRemoteDataSource {
-        return PersonnelRemoteDataSource(apiService)
-    }
-
-    @Provides
     fun providePersonnelRepository(
-        personnelRemoteDataSource: PersonnelRemoteDataSource
+        database: AppDatabase,
+        apiService: PersonnelApiService
     ): PersonnelRepository {
-        return PersonnelRepositoryImpl(personnelRemoteDataSource)
+        return PersonnelRepositoryImpl(database, apiService)
     }
 
     @Provides
