@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
@@ -27,9 +28,11 @@ class PersonnelViewModel @Inject constructor(
 
     private val _searchQuery = MutableStateFlow(PersonnelSearchQuery())
 
-    val personnel: Flow<PagingData<Personnel>> = _searchQuery.flatMapLatest {
-        getPersonnelUseCase(it)
-    }.cachedIn(viewModelScope)
+    val personnel: Flow<PagingData<Personnel>> = _searchQuery
+        .debounce(500L)
+        .flatMapLatest {
+            getPersonnelUseCase(it)
+        }.cachedIn(viewModelScope)
 
     fun onEvent(event: PersonnelEvent) {
         when (event) {
