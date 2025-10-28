@@ -1,6 +1,7 @@
 package com.farouktouil.farouktouil.order_feature.presentation
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -35,6 +37,7 @@ import com.farouktouil.farouktouil.order_feature.presentation.components.OrderUi
 import com.farouktouil.farouktouil.ui.theme.primaryLight
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import com.farouktouil.farouktouil.R // ← replace with your app's actual package name
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -81,10 +84,18 @@ fun OrderScreen(
         ) { paddingValues ->
             if (orderViewModel.orderList.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Pas de commandes")
+                    Image(
+                        painter = painterResource(id = R.drawable.bneder_labs), // replace with your drawable name
+                        contentDescription = "No orders illustration",
+                        modifier = Modifier
+                            .size(880.dp) // adjust size as needed
+                            .padding(0.dp)
+                    )
                 }
             } else {
                 LazyColumn(

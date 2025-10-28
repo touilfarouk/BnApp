@@ -2,6 +2,8 @@ package com.farouktouil.farouktouil.core.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.farouktouil.farouktouil.consultation_feature.data.local.dao.AppelConsultationDao
+import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelConsultationEntity
 
 import com.farouktouil.farouktouil.core.data.local.entities.DelivererEntity
 import com.farouktouil.farouktouil.core.data.local.entities.OrderEntity
@@ -19,9 +21,10 @@ import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteK
         OrderProductEntity::class,
         ProductEntity::class,
         PersonnelEntity::class,
-        RemoteKey::class
+        RemoteKey::class,
+        AppelConsultationEntity::class
     ],
-    version = 29, 
+    version = 30, 
     exportSchema = false
 )
 abstract class AppDatabase:RoomDatabase() {
@@ -30,4 +33,5 @@ abstract class AppDatabase:RoomDatabase() {
     abstract fun delivererDao():DelivererDao
     abstract fun personnelDao(): PersonnelDao
     abstract fun remoteKeysDao(): RemoteKeysDao
+    abstract fun appelConsultationDao(): AppelConsultationDao
 }

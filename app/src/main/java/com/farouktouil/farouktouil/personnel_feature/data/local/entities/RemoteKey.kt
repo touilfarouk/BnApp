@@ -9,5 +9,5 @@ data class RemoteKey(
     val id: String,
     val prevKey: Int?,
     val nextKey: Int?,
-    val query: String
+    val query: String? = null
 )

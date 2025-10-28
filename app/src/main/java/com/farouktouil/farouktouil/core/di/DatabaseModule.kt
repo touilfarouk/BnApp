@@ -2,6 +2,7 @@ package com.farouktouil.farouktouil.core.di
 
 import android.content.Context
 import androidx.room.Room
+import com.farouktouil.farouktouil.consultation_feature.data.local.dao.AppelConsultationDao
 import com.farouktouil.farouktouil.core.data.local.AppDatabase
 import com.farouktouil.farouktouil.core.data.local.DelivererDao
 import com.farouktouil.farouktouil.core.data.local.OrderDao
@@ -58,5 +59,11 @@ object DatabaseModule {
     @Singleton
     fun provideRemoteKeysDao(appDatabase: AppDatabase): RemoteKeysDao {
         return appDatabase.remoteKeysDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppelConsultationDao(appDatabase: AppDatabase): AppelConsultationDao {
+        return appDatabase.appelConsultationDao()
     }
 }

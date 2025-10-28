@@ -13,7 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.farouktouil.farouktouil.barcode_feature.presentation.BarcodeGeneratorScreen
-import com.farouktouil.farouktouil.consultation_feature.presentation.AppelConsultationScreen
+import com.farouktouil.farouktouil.consultation_feature.presentation.ConsultationScreen
 import com.farouktouil.farouktouil.deliverer_feature.presentation.DelivererScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseDelivererScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseProductsScreen
@@ -86,7 +86,7 @@ fun Navigation() {
             }
 
             composable(ScreenRoutes.AppelConsultationScreen.route) {
-                AppelConsultationScreen(navController = navController, drawerState = drawerState, scope = scope)
+                ConsultationScreen()
             }
 
             composable(ScreenRoutes.BarcodeGeneratorScreen.route) {

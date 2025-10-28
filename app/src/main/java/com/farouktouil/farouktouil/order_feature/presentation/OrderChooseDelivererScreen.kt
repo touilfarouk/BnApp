@@ -1,5 +1,6 @@
 package com.farouktouil.farouktouil.order_feature.presentation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,11 +12,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.farouktouil.farouktouil.R
 import com.farouktouil.farouktouil.core.domain.model.Deliverer
 import com.farouktouil.farouktouil.core.presentation.ScreenRoutes
 import com.farouktouil.farouktouil.order_feature.presentation.components.DelivererUiListItem
@@ -56,7 +59,7 @@ fun OrderChooseDelivererScreen(
         },*/
         topBar = {
             TopAppBar(
-                title = { Text("Section des produits") },
+                title = { Text("Section des commandes") },
                 colors = TopAppBarDefaults.mediumTopAppBarColors()
             )
         }
@@ -73,7 +76,7 @@ fun OrderChooseDelivererScreen(
             OutlinedTextField(
                 value = delivererSearchQuery,
                 onValueChange = { newQuery -> orderChooseDelivererViewModel.onSearchQueryChange(newQuery) },
-                label = { Text("Search Deliverer") },
+                label = { Text("Rechercher un fournisseur") },
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
                     //focusedBorderColor = orange,
@@ -88,7 +91,20 @@ fun OrderChooseDelivererScreen(
             }
 
             if (deliverersToShow.isEmpty() && !isLoading) {
-                Text("No deliverers found", modifier = Modifier.padding(16.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.bneder_labs), // replace with your drawable name
+                        contentDescription = "No orders illustration",
+                        modifier = Modifier
+                            .size(880.dp) // adjust size as needed
+                            .padding(0.dp)
+                    )
+                }
             }
 
             LazyColumn(

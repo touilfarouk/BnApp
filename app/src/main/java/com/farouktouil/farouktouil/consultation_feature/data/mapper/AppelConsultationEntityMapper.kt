@@ -1,0 +1,13 @@
+package com.farouktouil.farouktouil.consultation_feature.data.mapper
+
+import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelConsultationEntity
+import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsultation
+
+fun AppelConsultationEntity.toDomain(): AppelConsultation {
+    return AppelConsultation(
+        id = id,
+        nom_appel_consultation = nom_appel_consultation,
+        date_depot = date_depot,
+        cle_appel_consultation = cle_appel_consultation
+    )
+}
