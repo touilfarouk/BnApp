@@ -11,7 +11,8 @@ import com.farouktouil.farouktouil.consultation_feature.data.remote.dto.AppelCon
 import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsultation
 import com.farouktouil.farouktouil.consultation_feature.domain.model.ConsultationSearchQuery
 import com.farouktouil.farouktouil.core.data.local.AppDatabase
-import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteKey
+import com.farouktouil.farouktouil.consultation_feature.data.local.dao.RemoteKeysDao
+import com.farouktouil.farouktouil.consultation_feature.data.local.entity.RemoteKey
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -23,8 +24,12 @@ class AppelConsultationRemoteMediator(
 ) : RemoteMediator<Int, AppelConsultationEntity>() {
 
     private val appelConsultationDao = appDatabase.appelConsultationDao()
-    private val remoteKeyDao = appDatabase.remoteKeysDao()
+    private val remoteKeyDao: RemoteKeysDao = appDatabase.consultationRemoteKeysDao()
     private val searchId = searchQuery.toString()
+    
+    private fun getQueryString(): String {
+        return "${searchQuery.nom_appel_consultation}_${searchQuery.date_depot}"
+    }
 
     override suspend fun load(
         loadType: LoadType,
@@ -36,7 +41,7 @@ class AppelConsultationRemoteMediator(
                 LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
                 LoadType.APPEND -> {
                     val remoteKey = appDatabase.withTransaction {
-                        remoteKeyDao.getRemoteKeyById(searchId)
+                        remoteKeyDao.getRemoteKeys(id = "consultation", query = getQueryString())
                     }
                     remoteKey?.nextKey ?: return MediatorResult.Success(endOfPaginationReached = true)
                 }
@@ -61,7 +66,7 @@ class AppelConsultationRemoteMediator(
             appDatabase.withTransaction {
                 if (loadType == LoadType.REFRESH) {
                     appelConsultationDao.clearAll()
-                    remoteKeyDao.deleteRemoteKeyById(searchId)
+                    remoteKeyDao.clearRemoteKeys()
                 }
 
                 // Insert new data into the database
@@ -73,7 +78,12 @@ class AppelConsultationRemoteMediator(
                 val nextPage = if (endOfPaginationReached) null else currentPage + 1
                 
                 remoteKeyDao.insertAll(
-                    listOf(RemoteKey(id = searchId, prevKey = prevPage, nextKey = nextPage))
+                    listOf(RemoteKey(
+                        id = "consultation",
+                        prevKey = prevPage,
+                        nextKey = nextPage,
+                        query = getQueryString()
+                    ))
                 )
             }
 

@@ -2,9 +2,12 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.ksp) // Ensure this is present
+    alias(libs.plugins.ksp) apply true // Explicitly apply KSP
     alias(libs.plugins.daggerHilt)
 }
+
+// Apply KSP plugin
+apply(plugin = "com.google.devtools.ksp")
 
 android {
     namespace = "com.farouktouil.farouktouil"
@@ -54,6 +57,13 @@ android {
         baseline = file("lint-baseline.xml")
         abortOnError = false
     }
+    
+    // KSP arguments
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+        arg("room.incremental", "true")
+        arg("room.expandProjection", "true")
+    }
 }
 
 dependencies {
@@ -75,9 +85,12 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.9")
 
     implementation(libs.dagger.hilt)
+    implementation(libs.androidx.databinding.adapters)
+    implementation(libs.dagger.hilt.navigation.compose)
+    
+    // Hilt KSP processors
     ksp(libs.dagger.hilt.compiler)
     ksp(libs.dagger.hilt.androidx)
-    implementation(libs.dagger.hilt.navigation.compose)
 
     val lifecycle_version = "2.8.7"
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
@@ -87,8 +100,10 @@ dependencies {
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
-    ksp("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-paging:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+    
+// KSP configuration is handled in the android block
 
     implementation("com.opencsv:opencsv:5.8")
 
