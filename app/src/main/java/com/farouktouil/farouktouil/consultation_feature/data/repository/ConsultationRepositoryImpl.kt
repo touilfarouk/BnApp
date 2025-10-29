@@ -24,12 +24,14 @@ class ConsultationRepositoryImpl @Inject constructor(
 
     @OptIn(ExperimentalPagingApi::class)
     override fun getConsultationCalls(searchQuery: ConsultationSearchQuery): Flow<PagingData<AppelConsultation>> {
-        val queryString = "%${searchQuery.nom_appel_consultation}%"
-        val dateQuery = "%${searchQuery.date_depot}%"
+        val nomQuery = if (searchQuery.nom_appel_consultation.isNullOrEmpty()) "" else "%${searchQuery.nom_appel_consultation}%"
+        val dateQuery = if (searchQuery.date_depot.isNullOrEmpty()) "" else "%${searchQuery.date_depot}%"
+        
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
-                prefetchDistance = 10,
+                enablePlaceholders = false,
+                prefetchDistance = 5,
                 initialLoadSize = 20
             ),
             remoteMediator = AppelConsultationRemoteMediator(
@@ -38,9 +40,9 @@ class ConsultationRepositoryImpl @Inject constructor(
                 searchQuery = searchQuery
             ),
             pagingSourceFactory = {
-                appDatabase.appelConsultationDao().getAppelConsultationPagingSource(queryString)
+                appDatabase.appelConsultationDao().getAppelConsultationPagingSource(nomQuery, dateQuery)
             }
-        ).flow.map { pagingData: PagingData<AppelConsultationEntity> ->
+        ).flow.map { pagingData ->
             pagingData.map { it.toDomain() }
         }
     }

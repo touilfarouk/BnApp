@@ -6,7 +6,9 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelConsultationEntity
-import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntities
+import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntity
+import com.farouktouil.farouktouil.consultation_feature.data.remote.dto.AppelConsultationDto
+import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsultation
 import com.farouktouil.farouktouil.consultation_feature.domain.model.ConsultationSearchQuery
 import com.farouktouil.farouktouil.core.data.local.AppDatabase
 import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteKey
@@ -34,7 +36,6 @@ class AppelConsultationRemoteMediator(
                 LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
                 LoadType.APPEND -> {
                     val remoteKey = appDatabase.withTransaction {
-                        // Use the new DAO method
                         remoteKeyDao.getRemoteKeyById(searchId)
                     }
                     remoteKey?.nextKey ?: return MediatorResult.Success(endOfPaginationReached = true)
@@ -43,29 +44,45 @@ class AppelConsultationRemoteMediator(
 
             val response = consultationApiService.getConsultationCalls(
                 page = currentPage,
-                nom_appel_consultation = searchQuery.nom_appel_consultation.takeIf { it.isNotBlank() },
-                date_depot = searchQuery.date_depot.takeIf { it.isNotBlank() }
+                nom_appel_consultation = searchQuery.nom_appel_consultation.takeIf { !it.isNullOrBlank() },
+                date_depot = searchQuery.date_depot.takeIf { !it.isNullOrBlank() }
             )
-            val endOfPaginationReached = response.isEmpty()
 
-            val prevPage = if (currentPage == 1) null else currentPage - 1
-            val nextPage = if (endOfPaginationReached) null else currentPage + 1
+            if (!response.isSuccessful) {
+                return MediatorResult.Error(Exception("API call failed: ${response.code()} - ${response.message()}"))
+            }
+
+            val appelConsultations = response.body()?.mapIndexed { index, dto ->
+                dto.toAppelConsultation(currentPage * 20 + index) // Generate unique ID based on page and index
+            } ?: emptyList()
+
+            val endOfPaginationReached = appelConsultations.isEmpty()
 
             appDatabase.withTransaction {
                 if (loadType == LoadType.REFRESH) {
                     appelConsultationDao.clearAll()
-                    // Use the new DAO method to avoid clearing personnel keys
                     remoteKeyDao.deleteRemoteKeyById(searchId)
                 }
-                appelConsultationDao.insertAll(response.toEntities())
-                // The query parameter is not needed here as per the logic
-                remoteKeyDao.insertAll(listOf(RemoteKey(id = searchId, prevKey = prevPage, nextKey = nextPage)))
+
+                // Insert new data into the database
+                val entities = appelConsultations.map { it.toEntity() }
+                appelConsultationDao.insertAll(entities)
+
+                // Update remote keys
+                val prevPage = if (currentPage == 1) null else currentPage - 1
+                val nextPage = if (endOfPaginationReached) null else currentPage + 1
+                
+                remoteKeyDao.insertAll(
+                    listOf(RemoteKey(id = searchId, prevKey = prevPage, nextKey = nextPage))
+                )
             }
 
             MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
         } catch (e: IOException) {
             MediatorResult.Error(e)
         } catch (e: HttpException) {
+            MediatorResult.Error(e)
+        } catch (e: Exception) {
             MediatorResult.Error(e)
         }
     }

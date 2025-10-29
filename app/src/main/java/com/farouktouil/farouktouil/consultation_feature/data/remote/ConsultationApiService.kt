@@ -1,6 +1,7 @@
 package com.farouktouil.farouktouil.consultation_feature.data.remote
 
-import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsultation
+import com.farouktouil.farouktouil.consultation_feature.data.remote.dto.AppelConsultationDto
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -10,5 +11,5 @@ interface ConsultationApiService {
         @Query("page") page: Int,
         @Query("nom_appel_consultation") nom_appel_consultation: String?,
         @Query("date_depot") date_depot: String?
-    ): List<AppelConsultation>
+    ): Response<List<AppelConsultationDto>>
 }
