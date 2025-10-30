@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>News Feature Code</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        pre { 
+            background-color: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 5px; 
+            overflow-x: auto;
+            border-left: 4px solid #3498db;
+        }
+        .file-path { 
+            color: #7f8c8d; 
+            font-size: 0.9em; 
+            margin: 5px 0 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>News Feature Code</h1>
+    <p>This file contains the news-related code that was previously in the project.</p>
+
+    <!-- NewsMapper.kt -->
+    <h2>NewsMapper.kt</h2>
+    <div class="file-path">app/src/main/java/com/farouktouil/farouktouil/news_feature/domain/mapper/NewsMapper.kt</div>
+    <pre><code>package com.farouktouil.farouktouil.news_feature.domain.mapper
+
+import com.farouktouil.farouktouil.news_feature.data.local.entity.NewsEntity
+import com.farouktouil.farouktouil.news_feature.domain.model.News
+
+interface NewsMapper {
+    fun toNews(entity: NewsEntity): News
+    fun toEntity(news: News): NewsEntity
+    fun toEntityList(newsList: List<News>): List<NewsEntity>
+    fun toNewsList(entities: List<NewsEntity>): List<News>
+}</code></pre>
+
+    <!-- NewsMapperImpl.kt -->
+    <h2>NewsMapperImpl.kt</h2>
+    <div class="file-path">app/src/main/java/com/farouktouil/farouktouil/news_feature/data/mapper/NewsMapperImpl.kt</div>
+    <pre><code>package com.farouktouil.farouktouil.news_feature.data.mapper
+
+import com.farouktouil.farouktouil.news_feature.data.local.entity.NewsEntity
+import com.farouktouil.farouktouil.news_feature.data.remote.dto.NewsDto
+import com.farouktouil.farouktouil.news_feature.domain.mapper.NewsMapper
+import com.farouktouil.farouktouil.news_feature.domain.model.News
+import javax.inject.Inject
+
+class NewsMapperImpl @Inject constructor() : NewsMapper {
+    override fun toNews(entity: NewsEntity): News {
+        return News(
+            id = entity.id,
+            title = entity.title,
+            titleAr = entity.titleAr,
+            content = entity.content,
+            date = entity.date,
+            imageUrl = entity.imageUrl,
+            category = entity.category
+        )
+    }
+
+    override fun toEntity(news: News): NewsEntity {
+        return NewsEntity(
+            id = news.id,
+            title = news.title,
+            titleAr = news.titleAr,
+            content = news.content,
+            date = news.date,
+            imageUrl = news.imageUrl,
+            category = news.category
+        )
+    }
+
+    override fun toEntityList(newsList: List<News>): List<NewsEntity> {
+        return newsList.map { toEntity(it) }
+    }
+
+    override fun toNewsList(entities: List<NewsEntity>): List<News> {
+        return entities.map { toNews(it) }
+    }
+
+    fun toNews(dto: NewsDto): News {
+        return News(
+            id = dto.cle,
+            title = dto.titre ?: "",
+            titleAr = dto.titre_ar,
+            content = dto.contenu,
+            date = dto.date ?: "",
+            imageUrl = dto.pic_path,
+            category = dto.rubrique
+        )
+    }
+
+    fun toEntity(dto: NewsDto): NewsEntity {
+        return NewsEntity(
+            id = dto.cle,
+            title = dto.titre ?: "",
+            titleAr = dto.titre_ar,
+            content = dto.contenu,
+            date = dto.date ?: "",
+            imageUrl = dto.pic_path,
+            category = dto.rubrique
+        )
+    }
+
+    fun toEntityList(dtos: List<NewsDto>): List<NewsEntity> {
+        return dtos.map { toEntity(it) }
+    }
+}</code></pre>
+
+    <!-- GetNewsUseCase.kt -->
+    <h2>GetNewsUseCase.kt</h2>
+    <div class="file-path">app/src/main/java/com/farouktouil/farouktouil/news_feature/domain/usecase/GetNewsUseCase.kt</div>
+    <pre><code>package com.farouktouil.farouktouil.news_feature.domain.usecase
+
+import androidx.paging.PagingData
+import androidx.paging.map
+import com.farouktouil.farouktouil.news_feature.data.local.entity.NewsEntity
+import com.farouktouil.farouktouil.news_feature.domain.mapper.NewsMapper
+import com.farouktouil.farouktouil.news_feature.domain.model.News
+import com.farouktouil.farouktouil.news_feature.domain.repository.NewsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+
+class GetNewsUseCase @Inject constructor(
+    private val repository: NewsRepository,
+    private val mapper: NewsMapper
+) {
+    operator fun invoke(query: String = ""): Flow<PagingData<News>> = 
+        repository.getNews(query).map { pagingData ->
+            pagingData.map { entity -> mapper.toNews(entity) }
+        }
+}</code></pre>
+
+    <!-- NewsModule.kt -->
+    <h2>NewsModule.kt</h2>
+    <div class="file-path">app/src/main/java/com/farouktouil/farouktouil/news_feature/di/NewsModule.kt</div>
+    <pre><code>package com.farouktouil.farouktouil.news_feature.di
+
+import android.content.Context
+import androidx.room.Room
+import com.farouktouil.farouktouil.core.data.local.AppDatabase
+import com.farouktouil.farouktouil.core.util.NetworkUtils
+import com.farouktouil.farouktouil.news_feature.data.local.NewsDao
+import com.farouktouil.farouktouil.news_feature.data.local.RemoteKeyDao
+import com.farouktouil.farouktouil.news_feature.data.mapper.NewsMapper
+import com.farouktouil.farouktouil.news_feature.data.mapper.NewsMapperImpl
+import com.farouktouil.farouktouil.news_feature.data.remote.NewsApiService
+import com.farouktouil.farouktouil.news_feature.data.remote.NewsRemoteDataSource
+import com.farouktouil.farouktouil.news_feature.data.remote.NewsRemoteMediator
+import com.farouktouil.farouktouil.news_feature.data.repository.NewsRepositoryImpl
+import com.farouktouil.farouktouil.news_feature.domain.repository.NewsRepository
+import com.farouktouil.farouktouil.news_feature.domain.usecase.GetNewsUseCase
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object NewsModule {
+
+    @Provides
+    @Singleton
+    fun provideNewsMapper(): NewsMapper {
+        return NewsMapperImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsRemoteDataSource(api: NewsApiService): NewsRemoteDataSource {
+        return NewsRemoteDataSource(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsRepository(
+        newsDao: NewsDao,
+        remoteKeyDao: RemoteKeyDao,
+        newsApiService: NewsApiService,
+        networkUtils: NetworkUtils,
+        mapper: NewsMapper
+    ): NewsRepository {
+        return NewsRepositoryImpl(
+            newsDao = newsDao,
+            remoteKeyDao = remoteKeyDao,
+            api = newsApiService,
+            networkUtils = networkUtils,
+            mapper = mapper
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetNewsUseCase(repository: NewsRepository): GetNewsUseCase {
+        return GetNewsUseCase(repository)
+    }
+}</code></pre>
+
+    <!-- Navigation.kt (partial) -->
+    <h2>Navigation.kt (News Screen Part)</h2>
+    <div class="file-path">app/src/main/java/com/farouktouil/farouktouil/core/presentation/Navigation.kt</div>
+    <pre><code>// Add this to your ScreenRoutes sealed class:
+object NewsScreen: ScreenRoutes("news_screen")
+
+// Add this to your NavHost composable:
+composable(ScreenRoutes.NewsScreen.route) {
+    NewsScreen(
+        onNavigateUp = { navController.navigateUp() },
+        onNavigateToNewsDetail = { newsId ->
+            // Handle navigation to news detail if needed
+            // navController.navigate(ScreenRoutes.NewsDetailScreen.route + "/$newsId")
+        }
+    )
+}</code></pre>
+
+    <h2>Additional Notes</h2>
+    <p>Make sure to also include these dependencies in your app's build.gradle file:</p>
+    <pre><code>// Paging 3
+implementation "androidx.paging:paging-runtime-ktx:3.1.1"
+implementation "androidx.paging:paging-compose:1.0.0-alpha17"
+
+// Room
+implementation "androidx.room:room-runtime:2.5.0"
+implementation "androidx.room:room-ktx:2.5.0"
+kapt "androidx.room:room-compiler:2.5.0"
+
+// Hilt
+implementation "com.google.dagger:hilt-android:2.44"
+kapt "com.google.dagger:hilt-android-compiler:2.44"</code></pre>
+</body>
+</html>

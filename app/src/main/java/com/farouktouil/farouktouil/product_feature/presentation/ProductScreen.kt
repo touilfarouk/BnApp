@@ -96,8 +96,9 @@ fun ProductScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                  modifier = Modifier.height(196.dp), // ✅ increase height (default is ~64.dp)
                 title = {
-                    Column {
+                      Column {
                         Text(stringResource(id = R.string.products))
                         selectedDelivererId?.let { id ->
                             val delivererName = deliverers.find { it.delivererId == id }?.name ?: ""
@@ -146,7 +147,7 @@ fun ProductScreen(
                         IconButton(onClick = { showFilterMenu = true }) {
                             Icon(
                                 imageVector = Icons.Default.FilterList,
-                                contentDescription = "Filter by deliverer"
+                                contentDescription = "Filter avec Matériels et équipements"
                             )
                         }
                         DropdownMenu(
@@ -191,7 +192,7 @@ fun ProductScreen(
                 // Don't auto-select deliverer immediately, let user choose
                 selectedDeliverer.value = 0
             }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Product")
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Ajouter Matériels et équipements")
             }
         }
     ) { paddingValues ->
@@ -350,7 +351,7 @@ fun ProductForm(
         Button(
             onClick = {
                 val options = ScanOptions().apply {
-                    setPrompt("Scan a product barcode")
+                    setPrompt("Scan un Matériel ou équipement barcode")
                     setBeepEnabled(true)
                     setOrientationLocked(true)
                     setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
@@ -372,7 +373,7 @@ fun ProductForm(
         OutlinedTextField(
             value = name.value,
             onValueChange = { name.value = it },
-            label = { Text("Product Name") },
+            label = { Text("Nom Matériels ou équipements") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -380,54 +381,54 @@ fun ProductForm(
         OutlinedTextField(
             value = label.value,
             onValueChange = { label.value = it },
-            label = { Text("Product Label") },
+            label = { Text("Labelle du Matériels ou équipements ") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = price.value,
-            onValueChange = { price.value = it },
-            label = { Text("Price") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        // OutlinedTextField(
+        //     value = price.value,
+        //     onValueChange = { price.value = it },
+        //     label = { Text("Price") },
+        //     modifier = Modifier.fillMaxWidth(),
+        //     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+        // )
+        // Spacer(modifier = Modifier.height(8.dp))
 
-        // Quantity fields
-        OutlinedTextField(
-            value = quantity.value,
-            onValueChange = { quantity.value = it },
-            label = { Text("Quantity") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        // // Quantity fields
+        // OutlinedTextField(
+        //     value = quantity.value,
+        //     onValueChange = { quantity.value = it },
+        //     label = { Text("Quantity") },
+        //     modifier = Modifier.fillMaxWidth(),
+        //     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        // )
+        // Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = minQuantity.value,
-            onValueChange = { minQuantity.value = it },
-            label = { Text("Minimum Quantity") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        // OutlinedTextField(
+        //     value = minQuantity.value,
+        //     onValueChange = { minQuantity.value = it },
+        //     label = { Text("Minimum Quantity") },
+        //     modifier = Modifier.fillMaxWidth(),
+        //     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        // )
+        // Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = maxQuantity.value,
-            onValueChange = { maxQuantity.value = it },
-            label = { Text("Maximum Quantity") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
+        // OutlinedTextField(
+        //     value = maxQuantity.value,
+        //     onValueChange = { maxQuantity.value = it },
+        //     label = { Text("Maximum Quantity") },
+        //     modifier = Modifier.fillMaxWidth(),
+        //     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        // )
         Spacer(modifier = Modifier.height(8.dp))
 
         var expanded by remember { mutableStateOf(false) }
         val selectedDelivererName = if (selectedDeliverer.value > 0) {
             deliverers.find { it.delivererId == selectedDeliverer.value }?.name
-                ?: "Select Deliverer"
+                ?: "Choisir une structure"
         } else {
-            "Select Deliverer"
+           "Choisir une structure"
         }
 
         Box {
@@ -437,7 +438,7 @@ fun ProductForm(
                     containerColor = if (selectedDeliverer.value > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
             ) {
-                Text("Deliverer: $selectedDelivererName")
+                Text("Structure: $selectedDelivererName")
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 deliverers.forEach { deliverer ->
@@ -456,14 +457,14 @@ fun ProductForm(
         Button(
             onClick = onSave
         ) {
-            Text(text = "Save")
+            Text(text = "Enregistrer")
         }
 
         // Show message if deliverer not selected
         if (selectedDeliverer.value == 0 && deliverers.isNotEmpty()) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Please select a deliverer",
+                text = "prière de selectionner une structure",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
             )

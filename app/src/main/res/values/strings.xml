@@ -11,44 +11,44 @@
     <string name="menu">Menu</string>
 
     <!-- Tiroir de navigation -->
-    <string name="nav_orders">Commandes</string>
-    <string name="nav_deliverers">Livreurs</string>
-    <string name="nav_products">Produits</string>
+    <string name="nav_orders">Affectation</string>
+    <string name="nav_deliverers">Structures</string>
+    <string name="nav_products">Matériels et équipements</string>
     <string name="nav_contact">Contact</string>
-    <string name="nav_personnel">Notre équipe</string>
+    <string name="nav_personnel">Personnel BNEDER</string>
     <string name="nav_appel_consultation">Appel à consultation</string>
     <string name="nav_barcode_generator">Générateur de codes-barres</string>
     <string name="app_version">BnederApp v1.0</string>
 
-    <!-- Écran des produits -->
-    <string name="products">Produits</string>
-    <string name="product_name">Nom du produit</string>
+    <!-- Écran des Matériels et équipementss -->
+    <string name="products">Matériels et équipements</string>
+    <string name="product_name">Nom du Matériels et équipements</string>
     <string name="product_price">Prix par unité</string>
-    <string name="deliverer">Livreur</string>
-    <string name="select_deliverer">Sélectionner un livreur</string>
-    <string name="all_deliverers">Tous les livreurs</string>
+    <string name="deliverer">Structures</string>
+    <string name="select_deliverer">Sélectionner un Structures</string>
+    <string name="all_deliverers">Tous les Structuress</string>
     <string name="filtered_by">Filtré par : %s</string>
-    <string name="filter_by_deliverer">Filtrer par livreur</string>
+    <string name="filter_by_deliverer">Filtrer par Structures</string>
     <string name="total_items">Total : %d articles</string>
     <string name="inventory_value">Valeur : $%s</string>
     <string name="low_stock">Stock faible : %d</string>
 
-    <!-- Détails du produit -->
-    <string name="product_details">Détails du produit</string>
+    <!-- Détails du Matériels et équipements -->
+    <string name="product_details">Détails du Matériels et équipements</string>
     <string name="go_back">Retour</string>
-    <string name="scan_another_product">Scanner un autre produit</string>
+    <string name="scan_another_product">Scanner un autre Matériels et équipements</string>
     <string name="adjust_stock">Ajuster le stock</string>
-    <string name="order_more">Commander davantage</string>
+    <string name="order_more">Affectationr davantage</string>
 
     <!-- Interface du scanner -->
     <string name="scanning_for_barcode">Analyse du code-barres...</string>
     <string name="grant_permission">Accorder la permission</string>
     <string name="open_settings">Ouvrir les paramètres</string>
-    <string name="search_hint">Rechercher par nom de produit ou code-barres</string>
+    <string name="search_hint">Rechercher par nom de Matériels et équipements ou code-barres</string>
 
     <!-- Scanner de codes-barres -->
     <string name="scan_barcode">Scanner le code-barres</string>
-    <string name="scan_product_barcode">Scanner le code-barres d’un produit</string>
+    <string name="scan_product_barcode">Scanner le code-barres d’un Matériels et équipements</string>
     <string name="scanned">Scanné : %s</string>
 
     <!-- Générateur de codes-barres -->

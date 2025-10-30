@@ -49,7 +49,7 @@ fun DelivererScreen(
     Scaffold(
         topBar =  {
             TopAppBar(
-                title = { Text("Fournisseur") },
+                title = { Text("Structures") },
                 navigationIcon = {
                     IconButton(onClick = { scope.launch { drawerState.open() } }) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
@@ -63,7 +63,7 @@ fun DelivererScreen(
                 editingDeliverer.value = null
                 name.value = ""
             }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Ajouter Fournisseur")
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Ajouter une Structure")
             }
         }
     ) { paddingValues ->
@@ -144,7 +144,7 @@ fun DelivererForm(deliverer: Deliverer?, onSave: (String) -> Unit) {
             value = name.value,
             onValueChange = { name.value = it },
             singleLine = true,
-            placeholder = { Text(text = "Nom du Fournisseur") }
+            placeholder = { Text(text = "Nom du Structures") }
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(

@@ -394,7 +394,7 @@ fun ProductDetailsContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Informations sur le fournisseur
+        // Informations sur le Structures
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -402,7 +402,7 @@ fun ProductDetailsContent(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Informations sur le fournisseur",
+                    text = "Informations sur le Structures",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -410,14 +410,14 @@ fun ProductDetailsContent(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "ID du fournisseur : ${product.belongsToDeliverer}",
+                    text = "ID du Structures : ${product.belongsToDeliverer}",
                     style = MaterialTheme.typography.bodyMedium
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Remarque : les détails complets du fournisseur seront affichés ici",
+                    text = "Remarque : les détails complets du Structures seront affichés ici",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
