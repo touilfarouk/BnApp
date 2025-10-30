@@ -86,7 +86,10 @@ fun Navigation() {
             }
 
             composable(ScreenRoutes.AppelConsultationScreen.route) {
-                ConsultationScreen()
+                ConsultationScreen(
+                    drawerState = drawerState,
+                    scope = scope
+                )
             }
 
             composable(ScreenRoutes.BarcodeGeneratorScreen.route) {

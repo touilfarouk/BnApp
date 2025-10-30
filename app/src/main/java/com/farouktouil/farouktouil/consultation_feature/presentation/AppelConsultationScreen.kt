@@ -51,7 +51,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppelConsultationScreen(
-    navController: NavController,
     drawerState: DrawerState,
     scope: CoroutineScope,
     viewModel: ConsultationViewModel = hiltViewModel()
@@ -172,41 +171,6 @@ fun AppelConsultationScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun ConsultationCard(consultation: AppelConsultation) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = consultation.nom_appel_consultation?.trim() ?: "N/A",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = "Date de dépôt: ${consultation.date_depot?.trim() ?: "N/A"}",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "Clé: ${consultation.cle_appel_consultation?.trim() ?: "N/A"}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

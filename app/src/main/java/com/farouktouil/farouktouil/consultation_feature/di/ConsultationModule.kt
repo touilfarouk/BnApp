@@ -5,6 +5,7 @@ import com.farouktouil.farouktouil.consultation_feature.data.repository.Consulta
 import com.farouktouil.farouktouil.consultation_feature.domain.repository.ConsultationRepository
 import com.farouktouil.farouktouil.consultation_feature.domain.use_case.GetConsultationCallsUseCase
 import com.farouktouil.farouktouil.core.data.local.AppDatabase
+import com.farouktouil.farouktouil.core.util.NetworkUtils
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,10 +19,11 @@ object ConsultationModule {
     @Provides
     @Singleton
     fun provideConsultationRepository(
-        appDatabase: AppDatabase,
-        apiService: ConsultationApiService
+        db: AppDatabase,
+        api: ConsultationApiService,
+        networkUtils: NetworkUtils
     ): ConsultationRepository {
-        return ConsultationRepositoryImpl(appDatabase, apiService)
+        return ConsultationRepositoryImpl(db, api, networkUtils)
     }
 
     @Provides

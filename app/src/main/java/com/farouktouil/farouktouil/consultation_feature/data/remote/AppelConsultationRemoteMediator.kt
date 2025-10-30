@@ -13,21 +13,34 @@ import com.farouktouil.farouktouil.consultation_feature.data.local.entity.Remote
 import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntity
 import com.farouktouil.farouktouil.consultation_feature.domain.model.ConsultationSearchQuery
 import com.farouktouil.farouktouil.core.data.local.AppDatabase
+import com.farouktouil.farouktouil.core.util.NetworkUtils
 import retrofit2.HttpException
 import java.io.IOException
+import java.net.UnknownHostException
 import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
 class AppelConsultationRemoteMediator @Inject constructor(
     private val appDatabase: AppDatabase,
     private val consultationApiService: ConsultationApiService,
-    private val searchQuery: ConsultationSearchQuery
+    private val searchQuery: ConsultationSearchQuery,
+    private val networkUtils: NetworkUtils
 ) : RemoteMediator<Int, AppelConsultationEntity>() {
 
     private val appelConsultationDao: AppelConsultationDao = appDatabase.appelConsultationDao()
     private val remoteKeyDao: RemoteKeysDao = appDatabase.consultationRemoteKeysDao()
     
-    private val query = searchQuery.nom_appel_consultation ?: ""
+    private val query = searchQuery.nom_appel_consultation
+    
+    // Get count of items in database
+    private suspend fun getCachedItemCount(): Int {
+        return try {
+            appelConsultationDao.getTotalCount()
+        } catch (e: Exception) {
+            Log.e("RemoteMediator", "Error getting item count", e)
+            0
+        }
+    }
     
     override suspend fun initialize(): InitializeAction {
         return InitializeAction.LAUNCH_INITIAL_REFRESH
@@ -38,6 +51,17 @@ class AppelConsultationRemoteMediator @Inject constructor(
         state: PagingState<Int, AppelConsultationEntity>
     ): MediatorResult {
         Log.d("RemoteMediator", "Load triggered - Type: $loadType")
+        
+        // If we're offline, return success to show cached data
+        if (!networkUtils.isNetworkAvailable()) {
+            Log.d("RemoteMediator", "Offline mode - returning cached data")
+            // If we have no items in the database, return error to show error state
+            val itemCount = getCachedItemCount()
+            if (itemCount == 0) {
+                return MediatorResult.Error(IOException("No network connection and no cached data"))
+            }
+            return MediatorResult.Success(endOfPaginationReached = true)
+        }
         
         return try {
             // Get the page to fetch
@@ -122,11 +146,16 @@ class AppelConsultationRemoteMediator @Inject constructor(
             Log.d("RemoteMediator", "Load completed successfully")
             return MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
         } catch (e: IOException) {
-            Log.e("RemoteMediator", "Network error: ${e.message}", e)
-            return MediatorResult.Error(e)
+            if (e is UnknownHostException) {
+                Log.d("RemoteMediator", "No network connection - using cached data")
+                MediatorResult.Success(endOfPaginationReached = true)
+            } else {
+                Log.e("RemoteMediator", "Network error: ${e.message}", e)
+                MediatorResult.Error(e)
+            }
         } catch (e: HttpException) {
-            Log.e("RemoteMediator", "HTTP error: ${e.code()} - ${e.message()}", e)
-            return MediatorResult.Error(e)
+            Log.e("RemoteMediator", "HTTP error: ${e.message}", e)
+            MediatorResult.Success(endOfPaginationReached = true) // Return success to show cached data
         } catch (e: Exception) {
             Log.e("RemoteMediator", "Unexpected error: ${e.message}", e)
             return MediatorResult.Error(e)
@@ -136,8 +165,8 @@ class AppelConsultationRemoteMediator @Inject constructor(
     /**
      * Get the remote key for the last item in the paging state.
      */
-    private suspend fun getRemoteKeyForLastItem(state: PagingState<Int, AppelConsultationEntity>): RemoteKey? {
+    private suspend fun getRemoteKeyForLastItem(@Suppress("UNUSED_PARAMETER") state: PagingState<Int, AppelConsultationEntity>): RemoteKey? {
         val id = "consultation_${searchQuery.nom_appel_consultation ?: "all"}"
-        return remoteKeyDao.getRemoteKeys(id, searchQuery.nom_appel_consultation)
+        return remoteKeyDao.getRemoteKeys(id, query ?: "")
     }
 }

@@ -22,7 +22,8 @@ import javax.inject.Inject
 
 class ConsultationRepositoryImpl @Inject constructor(
     private val appDatabase: AppDatabase,
-    private val consultationApiService: ConsultationApiService
+    private val consultationApiService: ConsultationApiService,
+    private val networkUtils: com.farouktouil.farouktouil.core.util.NetworkUtils
 ) : ConsultationRepository {
 
     private val appelConsultationDao: AppelConsultationDao
@@ -30,7 +31,8 @@ class ConsultationRepositoryImpl @Inject constructor(
 
     @OptIn(ExperimentalPagingApi::class)
     override fun getConsultationCalls(searchQuery: ConsultationSearchQuery): Flow<PagingData<AppelConsultation>> {
-        val query = "%${searchQuery.nom_appel_consultation ?: ""}%"
+        val nomAppelConsultation = searchQuery.nom_appel_consultation ?: ""
+        val query = "%$nomAppelConsultation%"
         Log.d("ConsultationRepo", "Getting consultation calls with query: $query")
         
         val pagingSourceFactory = { 
@@ -48,7 +50,8 @@ class ConsultationRepositoryImpl @Inject constructor(
             remoteMediator = AppelConsultationRemoteMediator(
                 appDatabase = appDatabase,
                 consultationApiService = consultationApiService,
-                searchQuery = searchQuery
+                searchQuery = searchQuery,
+                networkUtils = networkUtils
             ),
             pagingSourceFactory = pagingSourceFactory
         ).flow.map { pagingData ->

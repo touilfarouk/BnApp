@@ -1,62 +1,209 @@
 package com.farouktouil.farouktouil.consultation_feature.presentation
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import android.util.Log
-import kotlin.math.min
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsultation
+import com.farouktouil.farouktouil.core.util.NetworkUtils
+import com.farouktouil.farouktouil.personnel_feature.presentation.LoadingItem
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
-@SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConsultationScreen(modifier: Modifier = Modifier, viewModel: ConsultationViewModel = hiltViewModel()) {
-    val state by viewModel.state.collectAsState()
+fun ConsultationScreen(
+    drawerState: DrawerState,
+    scope: CoroutineScope,
+    viewModel: ConsultationViewModel = hiltViewModel()
+) {
+    val state = viewModel.state.collectAsState().value
     val consultations = viewModel.consultations.collectAsLazyPagingItems()
 
-    Column(modifier = modifier.padding(16.dp)) {
-        SearchAndFilterCard(state = state, onEvent = viewModel::onEvent)
-        Spacer(modifier = Modifier.height(16.dp))
-        ConsultationList(consultations = consultations)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Appels de Consultation") },
+                navigationIcon = {
+                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Open navigation drawer"
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+            SearchAndFilterCard(
+                state = state,
+                onEvent = viewModel::onEvent
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(
+                    count = consultations.itemCount,
+                    key = { index ->
+                        consultations[index]?.cle_appel_consultation ?: index
+                    }
+                ) { index ->
+                    consultations[index]?.let { consultation ->
+                        ConsultationCard(consultation = consultation)
+                    }
+                }
+
+                consultations.loadState.apply {
+                    when {
+                        refresh is LoadState.Loading -> {
+                            item {
+                                Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+                        append is LoadState.Loading -> {
+                            item { LoadingItem() }
+                        }
+                        refresh is LoadState.Error -> {
+                            val e = consultations.loadState.refresh as LoadState.Error
+                            item {
+                                ErrorItem(
+                                    message = e.error.localizedMessage ?: "An error occurred",
+                                    onRetry = { consultations.retry() }
+                                )
+                            }
+                        }
+                        append is LoadState.Error -> {
+                            val e = consultations.loadState.append as LoadState.Error
+                            item {
+                                ErrorItem(
+                                    message = e.error.localizedMessage ?: "An error occurred",
+                                    onRetry = { consultations.retry() }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ConsultationCard(consultation: AppelConsultation) {
+    val title = consultation.nom_appel_consultation.ifEmpty { "Sans titre" }
+    val date = consultation.date_depot ?: "Date inconnue"
+    val id = consultation.cle_appel_consultation
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // ID
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Fingerprint,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "#$id",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                // Date
+                if (date != "Date inconnue") {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = date,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ErrorItem(message: String, onRetry: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = message, color = MaterialTheme.colorScheme.onError)
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = onRetry) {
+                Text("Retry")
+            }
+        }
     }
 }
 
@@ -66,12 +213,22 @@ fun SearchAndFilterCard(state: ConsultationScreenState, onEvent: (ConsultationEv
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Button(onClick = { expanded = !expanded }) {
-                Text(if (expanded) "Hide Search & Filter" else "Show Search & Filter")
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Search & Filter", style = MaterialTheme.typography.titleMedium)
+                TextButton(onClick = { expanded = !expanded }) {
+                    Text(if (expanded) "Hide" else "Show")
+                }
             }
+
             if (expanded) {
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
@@ -93,179 +250,15 @@ fun SearchAndFilterCard(state: ConsultationScreenState, onEvent: (ConsultationEv
 }
 
 @Composable
-fun ConsultationList(consultations: LazyPagingItems<AppelConsultation>) {
-    Log.d("ConsultationList", "Recomposing with ${consultations.itemCount} items, loadState: ${consultations.loadState}")
-    
-    LaunchedEffect(consultations.loadState) {
-        Log.d("ConsultationList", "Load state changed: ${consultations.loadState}")
-        Log.d("ConsultationList", "Items in paging data: ${consultations.itemCount}")
-        
-        // Log first few items for debugging
-        val items = (0 until minOf(3, consultations.itemCount)).mapNotNull { consultations[it] }
-        Log.d("ConsultationList", "First ${items.size} items: $items")
-    }
-
-    LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
-        when (val loadState = consultations.loadState.refresh) {
-            is LoadState.Loading -> {
-                item {
-                    Log.d("ConsultationList", "Showing loading state")
-                    Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-            }
-            is LoadState.Error -> {
-                item {
-                    Log.e("ConsultationList", "Error loading data", loadState.error)
-                    Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "Error: ${loadState.error.message}")
-                            Button(onClick = { consultations.retry() }) {
-                                Text(text = "Retry")
-                            }
-                        }
-                    }
-                }
-            }
-            else -> {
-                Log.d("ConsultationList", "Displaying ${consultations.itemCount} items")
-                if (consultations.itemCount == 0) {
-                    item {
-                        Log.d("ConsultationList", "No items to display")
-                        Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("No consultations found")
-                        }
-                    }
-                } else {
-                    items(
-                        count = consultations.itemCount,
-                        key = { index ->
-                            val item = consultations.peek(index)
-                            Log.d("ConsultationList", "Item at $index: ${item?.id} - ${item?.displayTitle}")
-                            item?.id ?: index
-                        }
-                    ) { index ->
-                        val consultation = consultations[index]
-                        if (consultation != null) {
-                            Log.d("ConsultationList", "Rendering item at $index: ${consultation.id} - ${consultation.displayTitle}")
-                            ConsultationItem(consultation = consultation)
-                        } else {
-                            Log.d("ConsultationList", "Null consultation at index $index")
-                        }
-                    }
-                }
-            }
-        }
-
-        when (val loadState = consultations.loadState.append) {
-            is LoadState.Loading -> {
-                item {
-                    Log.d("ConsultationList", "Loading more items...")
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-            }
-            is LoadState.Error -> {
-                item {
-                    Log.e("ConsultationList", "Error appending data", loadState.error)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "Error loading more: ${loadState.error.message}")
-                            Button(onClick = { consultations.retry() }) {
-                                Text(text = "Retry")
-                            }
-                        }
-                    }
-                }
-            }
-            else -> {}
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ConsultationItem(
-    consultation: AppelConsultation,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(2.dp),
-        onClick = onClick,
-        shape = MaterialTheme.shapes.medium
+private fun LoadingView() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            // Title with proper styling
-            Text(
-                text = consultation.displayTitle,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // ID and Date row
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // ID
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Fingerprint,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "#${consultation.id}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                // Date
-                if (!consultation.displayDate.isNullOrBlank()) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = consultation.displayDate,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
+        CircularProgressIndicator()
     }
 }
+
+
