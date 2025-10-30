@@ -23,20 +23,14 @@ interface AppelConsultationDao {
     @Query("""
         SELECT * FROM appel_consultation 
         WHERE (:query = '' OR 
-               nom_appel_consultation LIKE '%' || :query || '%' OR
-               date_depot LIKE '%' || :query || '%' OR
-               cle_appel_consultation LIKE '%' || :query || '%')
-        ORDER BY 
-            CASE 
-                WHEN :orderBy = 'date_asc' AND date_depot IS NOT NULL THEN date_depot 
-                WHEN :orderBy = 'date_desc' AND date_depot IS NOT NULL THEN date_depot 
-                ELSE nom_appel_consultation 
-            END
-            COLLATE NOCASE DESC
+               nom_appel_consultation LIKE :query OR
+               cle_appel_consultation LIKE :query)
+          AND (:dateQuery = '' OR date_depot LIKE :dateQuery)
+        ORDER BY CAST(cle_appel_consultation AS INTEGER) DESC
     """)
     fun getAppelConsultationPagingSource(
         query: String = "",
-        orderBy: String = "date_desc"
+        dateQuery: String = ""
     ): PagingSource<Int, AppelConsultationEntity>
 
     @Query("SELECT * FROM appel_consultation WHERE id = :id")

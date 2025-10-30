@@ -47,6 +47,9 @@ class AppelConsultationRemoteMediator(
                 }
             }
 
+            // Log the request parameters
+            android.util.Log.d("RemoteMediator", "Fetching page $currentPage with query: $searchQuery")
+            
             val response = consultationApiService.getConsultationCalls(
                 page = currentPage,
                 nom_appel_consultation = searchQuery.nom_appel_consultation.takeIf { !it.isNullOrBlank() },
@@ -57,11 +60,30 @@ class AppelConsultationRemoteMediator(
                 return MediatorResult.Error(Exception("API call failed: ${response.code()} - ${response.message()}"))
             }
 
-            val appelConsultations = response.body()?.mapIndexed { index, dto ->
-                dto.toAppelConsultation(currentPage * 20 + index) // Generate unique ID based on page and index
-            } ?: emptyList()
+            val consultations = response.body() ?: emptyList()
+            
+            // Log the received data
+            if (consultations.isNotEmpty()) {
+                val firstItem = consultations.firstOrNull()
+                val lastItem = consultations.lastOrNull()
+                android.util.Log.d("RemoteMediator", "Received ${consultations.size} items")
+                firstItem?.let { 
+                    android.util.Log.d("RemoteMediator", "First item - Cle: ${it.cleAppelConsultation}, Nom: ${it.nomAppelConsultation}")
+                }
+                lastItem?.let {
+                    if (it != firstItem) {
+                        android.util.Log.d("RemoteMediator", "Last item - Cle: ${it.cleAppelConsultation}, Nom: ${it.nomAppelConsultation}")
+                    }
+                }
+            } else {
+                android.util.Log.d("RemoteMediator", "Received empty list of consultations")
+            }
+            
+            val endOfPaginationReached = consultations.isEmpty()
 
-            val endOfPaginationReached = appelConsultations.isEmpty()
+            val appelConsultations = consultations.mapIndexed { index, dto ->
+                dto.toAppelConsultation(currentPage * 20 + index) // Generate unique ID based on page and index
+            }
 
             appDatabase.withTransaction {
                 if (loadType == LoadType.REFRESH) {

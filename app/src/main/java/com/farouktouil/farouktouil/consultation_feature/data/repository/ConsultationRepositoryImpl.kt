@@ -5,7 +5,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
-import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelConsultationEntity
 import com.farouktouil.farouktouil.consultation_feature.data.mapper.toDomain
 import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntity
 import com.farouktouil.farouktouil.consultation_feature.data.remote.AppelConsultationRemoteMediator
@@ -15,12 +14,7 @@ import com.farouktouil.farouktouil.consultation_feature.domain.model.Consultatio
 import com.farouktouil.farouktouil.consultation_feature.domain.repository.ConsultationRepository
 import com.farouktouil.farouktouil.core.data.local.AppDatabase
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.Dispatchers
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 class ConsultationRepositoryImpl @Inject constructor(

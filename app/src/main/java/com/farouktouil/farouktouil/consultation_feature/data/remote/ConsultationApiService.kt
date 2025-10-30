@@ -10,6 +10,8 @@ interface ConsultationApiService {
     suspend fun getConsultationCalls(
         @Query("page") page: Int,
         @Query("nom_appel_consultation") nom_appel_consultation: String?,
-        @Query("date_depot") date_depot: String?
+        @Query("date_depot") date_depot: String?,
+        @Query("sort") sort: String = "cle_appel_consultation",
+        @Query("order") order: String = "DESC"
     ): Response<List<AppelConsultationDto>>
 }

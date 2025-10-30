@@ -5,7 +5,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelConsultationEntity
 import com.farouktouil.farouktouil.core.data.local.AppDatabase
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.*
@@ -76,7 +75,7 @@ class AppelConsultationDaoTest {
         dao.insertAll(items)
 
         // When
-        val searchResults = dao.getAppelConsultationPagingSource("A").load(
+        val searchResults = dao.getAppelConsultationPagingSource("A", dateQuery).load(
             androidx.paging.PagingSource.LoadParams.Refresh(
                 key = null,
                 loadSize = 10,
@@ -129,7 +128,7 @@ class AppelConsultationDaoTest {
         dao.insertAll(items)
 
         // When
-        val allItems = dao.getAppelConsultationPagingSource().load(
+        val allItems = dao.getAppelConsultationPagingSource(dateQuery = dateQuery).load(
             androidx.paging.PagingSource.LoadParams.Refresh(
                 key = null,
                 loadSize = 10,
