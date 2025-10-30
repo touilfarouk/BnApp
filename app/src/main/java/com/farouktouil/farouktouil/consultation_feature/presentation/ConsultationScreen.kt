@@ -3,6 +3,7 @@ package com.farouktouil.farouktouil.consultation_feature.presentation
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -17,8 +18,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,7 +29,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material3.Icon
 import androidx.compose.ui.unit.dp
+import android.util.Log
+import kotlin.math.min
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -81,10 +94,22 @@ fun SearchAndFilterCard(state: ConsultationScreenState, onEvent: (ConsultationEv
 
 @Composable
 fun ConsultationList(consultations: LazyPagingItems<AppelConsultation>) {
+    Log.d("ConsultationList", "Recomposing with ${consultations.itemCount} items, loadState: ${consultations.loadState}")
+    
+    LaunchedEffect(consultations.loadState) {
+        Log.d("ConsultationList", "Load state changed: ${consultations.loadState}")
+        Log.d("ConsultationList", "Items in paging data: ${consultations.itemCount}")
+        
+        // Log first few items for debugging
+        val items = (0 until minOf(3, consultations.itemCount)).mapNotNull { consultations[it] }
+        Log.d("ConsultationList", "First ${items.size} items: $items")
+    }
+
     LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
         when (val loadState = consultations.loadState.refresh) {
             is LoadState.Loading -> {
                 item {
+                    Log.d("ConsultationList", "Showing loading state")
                     Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
@@ -92,6 +117,7 @@ fun ConsultationList(consultations: LazyPagingItems<AppelConsultation>) {
             }
             is LoadState.Error -> {
                 item {
+                    Log.e("ConsultationList", "Error loading data", loadState.error)
                     Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(text = "Error: ${loadState.error.message}")
@@ -103,9 +129,30 @@ fun ConsultationList(consultations: LazyPagingItems<AppelConsultation>) {
                 }
             }
             else -> {
-                items(consultations.itemCount, key = { index -> consultations.peek(index)?.id ?: index }) {
-                    consultations[it]?.let { consultation ->
-                        ConsultationItem(consultation = consultation)
+                Log.d("ConsultationList", "Displaying ${consultations.itemCount} items")
+                if (consultations.itemCount == 0) {
+                    item {
+                        Log.d("ConsultationList", "No items to display")
+                        Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("No consultations found")
+                        }
+                    }
+                } else {
+                    items(
+                        count = consultations.itemCount,
+                        key = { index ->
+                            val item = consultations.peek(index)
+                            Log.d("ConsultationList", "Item at $index: ${item?.id} - ${item?.displayTitle}")
+                            item?.id ?: index
+                        }
+                    ) { index ->
+                        val consultation = consultations[index]
+                        if (consultation != null) {
+                            Log.d("ConsultationList", "Rendering item at $index: ${consultation.id} - ${consultation.displayTitle}")
+                            ConsultationItem(consultation = consultation)
+                        } else {
+                            Log.d("ConsultationList", "Null consultation at index $index")
+                        }
                     }
                 }
             }
@@ -114,16 +161,28 @@ fun ConsultationList(consultations: LazyPagingItems<AppelConsultation>) {
         when (val loadState = consultations.loadState.append) {
             is LoadState.Loading -> {
                 item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                    Log.d("ConsultationList", "Loading more items...")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         CircularProgressIndicator()
                     }
                 }
             }
             is LoadState.Error -> {
                 item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                    Log.e("ConsultationList", "Error appending data", loadState.error)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = "Error: ${loadState.error.message}")
+                            Text(text = "Error loading more: ${loadState.error.message}")
                             Button(onClick = { consultations.retry() }) {
                                 Text(text = "Retry")
                             }
@@ -136,18 +195,77 @@ fun ConsultationList(consultations: LazyPagingItems<AppelConsultation>) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConsultationItem(consultation: AppelConsultation) {
+fun ConsultationItem(
+    consultation: AppelConsultation,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(2.dp),
+        onClick = onClick,
+        shape = MaterialTheme.shapes.medium
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Nom: ${consultation.nom_appel_consultation ?: "N/A"}")
-            Text(text = "Date dépôt: ${consultation.date_depot ?: "N/A"}")
-            Text(text = "Clé: ${consultation.cle_appel_consultation ?: "N/A"}")
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Title with proper styling
+            Text(
+                text = consultation.displayTitle,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // ID and Date row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // ID
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Fingerprint,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "#${consultation.id}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                // Date
+                if (!consultation.displayDate.isNullOrBlank()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = consultation.displayDate,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
     }
 }

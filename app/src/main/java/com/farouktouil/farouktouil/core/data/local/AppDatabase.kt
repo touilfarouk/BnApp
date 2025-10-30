@@ -32,8 +32,8 @@ import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteK
         AppelConsultationEntity::class,
         ConsultationRemoteKey::class
     ],
-    version = 35,
-    exportSchema = false
+    version = 38, // Incremented version due to schema changes
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -50,7 +50,9 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME
                 )
-                .fallbackToDestructiveMigration() // This will clear the database on version change
+                .fallbackToDestructiveMigration()
+
+                .createFromAsset("database/initial_data.db") // Optional: If you have initial data
                 .build()
                 INSTANCE = instance
                 instance

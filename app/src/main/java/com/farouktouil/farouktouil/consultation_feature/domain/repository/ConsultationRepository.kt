@@ -15,4 +15,6 @@ interface ConsultationRepository {
     suspend fun getConsultationById(id: Int): AppelConsultation?
     
     suspend fun getConsultationByKey(key: String): AppelConsultation?
+    
+    suspend fun logFirstConsultation()
 }

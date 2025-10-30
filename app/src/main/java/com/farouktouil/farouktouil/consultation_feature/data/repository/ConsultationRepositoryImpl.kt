@@ -1,12 +1,15 @@
 package com.farouktouil.farouktouil.consultation_feature.data.repository
 
+import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntity
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.farouktouil.farouktouil.consultation_feature.data.local.dao.AppelConsultationDao
 import com.farouktouil.farouktouil.consultation_feature.data.mapper.toDomain
-import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntity
+import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntities
 import com.farouktouil.farouktouil.consultation_feature.data.remote.AppelConsultationRemoteMediator
 import com.farouktouil.farouktouil.consultation_feature.data.remote.ConsultationApiService
 import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsultation
@@ -22,10 +25,18 @@ class ConsultationRepositoryImpl @Inject constructor(
     private val consultationApiService: ConsultationApiService
 ) : ConsultationRepository {
 
+    private val appelConsultationDao: AppelConsultationDao
+        get() = appDatabase.appelConsultationDao()
+
     @OptIn(ExperimentalPagingApi::class)
     override fun getConsultationCalls(searchQuery: ConsultationSearchQuery): Flow<PagingData<AppelConsultation>> {
-        val nomQuery = if (searchQuery.nom_appel_consultation.isNullOrEmpty()) "" else "%${searchQuery.nom_appel_consultation}%"
-        val dateQuery = if (searchQuery.date_depot.isNullOrEmpty()) "" else "%${searchQuery.date_depot}%"
+        val query = "%${searchQuery.nom_appel_consultation ?: ""}%"
+        Log.d("ConsultationRepo", "Getting consultation calls with query: $query")
+        
+        val pagingSourceFactory = { 
+            Log.d("ConsultationRepo", "Creating new PagingSource")
+            appelConsultationDao.getAppelConsultationPagingSource(query) 
+        }
         
         return Pager(
             config = PagingConfig(
@@ -39,9 +50,7 @@ class ConsultationRepositoryImpl @Inject constructor(
                 consultationApiService = consultationApiService,
                 searchQuery = searchQuery
             ),
-            pagingSourceFactory = {
-                appDatabase.appelConsultationDao().getAppelConsultationPagingSource(nomQuery, dateQuery) 
-            }
+            pagingSourceFactory = pagingSourceFactory
         ).flow.map { pagingData ->
             pagingData.map { it.toDomain() }
         }
@@ -49,49 +58,29 @@ class ConsultationRepositoryImpl @Inject constructor(
 
     override suspend fun saveConsultation(consultation: AppelConsultation): Long {
         return try {
-            // First save to local database
             val entity = consultation.toEntity()
-            val id = if (consultation.id != 0 && appDatabase.appelConsultationDao().isIdExists(consultation.id)) {
-                // Update existing consultation
-                appDatabase.appelConsultationDao().update(entity)
+            if (consultation.id != 0 && appelConsultationDao.isIdExists(consultation.id)) {
+                appelConsultationDao.update(entity)
                 consultation.id.toLong()
             } else {
-                // Insert new consultation
-                appDatabase.appelConsultationDao().insert(entity)
-                entity.id.toLong()
+                appelConsultationDao.insert(entity)
             }
             
-            // Then try to sync with remote
-            try {
-                // Call your API to save the consultation
-                // Uncomment and implement when your API is ready
-                // val response = consultationApiService.saveConsultation(consultation)
-                // Handle response if needed
-            } catch (e: Exception) {
-                // If sync fails, the local data is still saved
-                // You might want to implement a sync mechanism for later
-            }
+            // In a real app, you would also save to the server here
+            // and update the local database with the server response
             
-            id
+            consultation.id.toLong()
         } catch (e: Exception) {
-            throw Exception("Failed to save consultation: ${e.message}")
+            // Log error
+            -1L
         }
     }
 
     override suspend fun deleteConsultation(consultation: AppelConsultation) {
         try {
-            // First delete from local database
-            appDatabase.appelConsultationDao().deleteById(consultation.id)
+            appelConsultationDao.deleteById(consultation.id)
             
-            // Then try to sync with remote
-            try {
-                // Call your API to delete the consultation
-                // Uncomment and implement when your API is ready
-                // consultationApiService.deleteConsultation(consultation.id)
-            } catch (e: Exception) {
-                // If sync fails, you might want to add the operation to a queue for later retry
-                // or mark the record as deleted locally but keep it for sync
-            }
+            // In a real app, you would also delete from the server here
         } catch (e: Exception) {
             throw Exception("Failed to delete consultation: ${e.message}")
         }
@@ -126,31 +115,24 @@ class ConsultationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getConsultationByKey(key: String): AppelConsultation? {
-        return try {
-            // First try to get from local database
-            val local = appDatabase.appelConsultationDao().getByKey(key)
-            
-            // If not found locally or data might be stale, try to fetch from remote
-            if (local == null || isDataStale(local.lastUpdated)) {
-                try {
-                    // Uncomment and implement when your API is ready
-                    // val remote = consultationApiService.getConsultationByKey(key)
-                    // if (remote != null) {
-                    //     val entity = remote.toEntity()
-                    //     appDatabase.appelConsultationDao().insert(entity)
-                    //     return entity.toDomain()
-                    // }
-                } catch (e: Exception) {
-                    // If remote fetch fails, return local data if available
-                    if (local != null) return local.toDomain()
-                    throw Exception("Failed to fetch consultation by key: ${e.message}")
-                }
+        return appelConsultationDao.getByKey(key)?.toDomain()
+    }
+    
+    override suspend fun logFirstConsultation() {
+        try {
+            val firstConsultation = appelConsultationDao.getFirstConsultation()
+            if (firstConsultation != null) {
+                Log.d("ConsultationRepo", "First offline consultation: $firstConsultation")
+                Log.d("ConsultationRepo", "Details - ID: ${firstConsultation.cle_appel_consultation}, " +
+                        "Name: ${firstConsultation.nom_appel_consultation}, " +
+                        "Date: ${firstConsultation.date_depot}")
+            } else {
+                Log.d("ConsultationRepo", "No consultations found in local database")
             }
-            
-            local?.toDomain()
         } catch (e: Exception) {
-            throw Exception("Failed to get consultation by key: ${e.message}")
+            Log.e("ConsultationRepo", "Error logging first consultation", e)
         }
+    }
     }
     
     /**
@@ -163,4 +145,3 @@ class ConsultationRepositoryImpl @Inject constructor(
         val oneHourInMillis = 60 * 60 * 1000L
         return (System.currentTimeMillis() - lastUpdated) > oneHourInMillis
     }
-}
