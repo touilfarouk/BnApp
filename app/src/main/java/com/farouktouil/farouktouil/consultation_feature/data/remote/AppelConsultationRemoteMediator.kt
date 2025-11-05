@@ -30,7 +30,7 @@ class AppelConsultationRemoteMediator @Inject constructor(
     private val appelConsultationDao: AppelConsultationDao = appDatabase.appelConsultationDao()
     private val remoteKeyDao: RemoteKeysDao = appDatabase.consultationRemoteKeysDao()
     
-    private val query = searchQuery.nom_appel_consultation
+    private val searchQueryText = searchQuery.nom_appel_consultation
     
     // Get count of items in database
     private suspend fun getCachedItemCount(): Int {
@@ -80,17 +80,15 @@ class AppelConsultationRemoteMediator @Inject constructor(
                     val remoteKeys = getRemoteKeyForLastItem(state)
                         ?: return MediatorResult.Success(endOfPaginationReached = true)
                     remoteKeys.nextKey ?: return MediatorResult.Success(endOfPaginationReached = true)
-                }      }
+                }      
+            }
 
             // Fetch data from the API
             Log.d("RemoteMediator", "Fetching page $page from API")
             val response = try {
                 consultationApiService.getConsultationCalls(
                     page = page,
-                    nom_appel_consultation = searchQuery.nom_appel_consultation,
-                    date_depot = searchQuery.date_depot,
-                    sort = "cle_appel_consultation",
-                    order = "DESC"
+                    search = searchQuery.nom_appel_consultation
                 )
             } catch (e: Exception) {
                 Log.e("RemoteMediator", "Error fetching from API: ${e.message}")
@@ -101,13 +99,17 @@ class AppelConsultationRemoteMediator @Inject constructor(
                 return MediatorResult.Error(HttpException(response))
             }
 
-            val consultations = response.body() ?: emptyList()
-            val endOfPaginationReached = consultations.isEmpty()
+            val responseBody = response.body() ?: return MediatorResult.Success(endOfPaginationReached = true)
+            val consultations = responseBody.data
+            Log.d("RemoteMediator", "Fetched ${consultations.size} items from API")
+
+            val pagination = responseBody.pagination
+            val endOfPaginationReached = !pagination.hasNext
             
             // Log the first consultation if available
             if (consultations.isNotEmpty()) {
                 val first = consultations.first()
-                Log.d("RemoteMediator", "First consultation in response: ${first.cleAppelConsultation} - ${first.nomAppelConsultation}")
+                Log.d("RemoteMediator", "First consultation in response: ${first.id} - ${first.title}")
             } else {
                 Log.d("RemoteMediator", "No consultations in response")
             }
@@ -129,13 +131,15 @@ class AppelConsultationRemoteMediator @Inject constructor(
                 Log.d("RemoteMediator", "Page: $page, Prev: $prevKey, Next: $nextKey, End: $endOfPaginationReached")
 
                 // Save the remote key for pagination
-                val remoteKey = RemoteKey(
-                    id = "consultation_${searchQuery.nom_appel_consultation ?: "all"}",
-                    prevKey = prevKey,
-                    nextKey = nextKey,
-                    query = query
-                )
-                remoteKeyDao.insertAll(listOf(remoteKey))
+                val keys = consultations.map { consultation ->
+                    RemoteKey(
+                        consultationId = consultation.id,
+                        prevKey = prevKey,
+                        nextKey = nextKey,
+                        query = searchQuery.nom_appel_consultation
+                    )
+                }
+                remoteKeyDao.insertAll(keys)
 
                 // Save consultations to database
                 val entities = consultations.map { it.toEntity() }
@@ -166,7 +170,6 @@ class AppelConsultationRemoteMediator @Inject constructor(
      * Get the remote key for the last item in the paging state.
      */
     private suspend fun getRemoteKeyForLastItem(@Suppress("UNUSED_PARAMETER") state: PagingState<Int, AppelConsultationEntity>): RemoteKey? {
-        val id = "consultation_${searchQuery.nom_appel_consultation ?: "all"}"
-        return remoteKeyDao.getRemoteKeys(id, query ?: "")
+        return remoteKeyDao.getLastRemoteKey(searchQuery.nom_appel_consultation)
     }
 }

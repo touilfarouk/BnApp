@@ -83,7 +83,7 @@ object AppModule {
     @ConsultationApi
     fun provideConsultationRetrofit(@ConsultationApi okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://bneder.dz/api/tenders/")
+            .baseUrl("https://bneder.dz/api/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

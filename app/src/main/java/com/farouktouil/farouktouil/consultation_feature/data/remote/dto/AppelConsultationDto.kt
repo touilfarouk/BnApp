@@ -4,44 +4,58 @@ import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelC
 import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsultation
 import com.google.gson.annotations.SerializedName
 
+data class DocumentDto(
+    @SerializedName("year")
+    val year: String,
+    
+    @SerializedName("fileName")
+    val fileName: String,
+    
+    @SerializedName("fileUrl")
+    val fileUrl: String
+)
+
 data class AppelConsultationDto(
-    @SerializedName("nom_appel_consultation")
-    val nomAppelConsultation: String?,
+    @SerializedName("id")
+    val id: Int,
     
-    @SerializedName("date_depot")
-    val dateDepot: String?,
+    @SerializedName("title")
+    val title: String,
     
-    @SerializedName("cle_appel_consultation")
-    val cleAppelConsultation: Int,
+    @SerializedName("depositDate")
+    val depositDate: String?,
     
-    @SerializedName("jour_depot")
-    val jourDepot: String? = null,
+    @SerializedName("dayOfWeek")
+    val dayOfWeek: String? = null,
     
-    @SerializedName("date_fin_evaluation")
-    val dateFinEvaluation: String? = null,
+    @SerializedName("evaluationEndDate")
+    val evaluationEndDate: String? = null,
     
     @SerializedName("attribution")
     val attribution: String? = null,
     
-    @SerializedName("num_tender")
-    val numTender: Int = 0,
+    @SerializedName("tenderNumber")
+    val tenderNumber: Int = 0,
     
-    @SerializedName("download_count")
+    @SerializedName("downloadCount")
     val downloadCount: Int = 0,
     
     @SerializedName("code")
-    val code: Int = 0
+    val code: Int = 0,
+    
+    @SerializedName("documents")
+    val documents: List<DocumentDto> = emptyList()
 ) {
     fun toAppelConsultation(): AppelConsultation {
         return AppelConsultation(
-            id = cleAppelConsultation,
-            nom_appel_consultation = nomAppelConsultation ?: "",
-            date_depot = dateDepot,
-            cle_appel_consultation = cleAppelConsultation.toString(),
-            jour_depot = jourDepot,
-            date_fin_evaluation = dateFinEvaluation,
+            id = id,
+            nom_appel_consultation = title,
+            date_depot = depositDate,
+            cle_appel_consultation = id.toString(),
+            jour_depot = dayOfWeek,
+            date_fin_evaluation = evaluationEndDate,
             attribution = attribution,
-            num_tender = numTender,
+            num_tender = tenderNumber,
             download_count = downloadCount,
             code = code
         )
@@ -49,13 +63,13 @@ data class AppelConsultationDto(
 
     fun toEntity(): AppelConsultationEntity {
         return AppelConsultationEntity(
-            cle_appel_consultation = cleAppelConsultation,
-            nom_appel_consultation = nomAppelConsultation ?: "",
-            date_depot = dateDepot,
-            jour_depot = jourDepot,
-            date_fin_evaluation = dateFinEvaluation,
+            cle_appel_consultation = id,
+            nom_appel_consultation = title,
+            date_depot = depositDate,
+            jour_depot = dayOfWeek,
+            date_fin_evaluation = evaluationEndDate,
             attribution = attribution,
-            num_tender = numTender,
+            num_tender = tenderNumber,
             download_count = downloadCount,
             code = code
         )

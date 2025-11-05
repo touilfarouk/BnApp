@@ -18,6 +18,8 @@ import com.farouktouil.farouktouil.core.data.local.entities.ProductEntity
 import com.farouktouil.farouktouil.personnel_feature.data.local.PersonnelEntity
 import com.farouktouil.farouktouil.personnel_feature.data.local.dao.PersonnelDao
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_33_34
+import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_34_35
+import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_38_39
 import com.farouktouil.farouktouil.personnel_feature.data.local.dao.RemoteKeysDao
 import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteKey
 
@@ -32,7 +34,7 @@ import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteK
         AppelConsultationEntity::class,
         ConsultationRemoteKey::class
     ],
-    version = 38, // Incremented version due to schema changes
+    version = 39, // Incremented version due to schema changes
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -50,8 +52,12 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME
                 )
+                .addMigrations(
+                    MIGRATION_33_34,
+                    MIGRATION_34_35,
+                    MIGRATION_38_39
+                )
                 .fallbackToDestructiveMigration()
-
                 .createFromAsset("database/initial_data.db") // Optional: If you have initial data
                 .build()
                 INSTANCE = instance

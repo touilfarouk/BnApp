@@ -6,14 +6,14 @@ import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsul
 
 fun AppelConsultationDto.toDomain(): AppelConsultation {
     return AppelConsultation(
-        id = cleAppelConsultation,
-        nom_appel_consultation = nomAppelConsultation ?: "",
-        date_depot = dateDepot,
-        cle_appel_consultation = cleAppelConsultation.toString(),
-        jour_depot = jourDepot,
-        date_fin_evaluation = dateFinEvaluation,
+        id = id,
+        nom_appel_consultation = title,
+        date_depot = depositDate,
+        cle_appel_consultation = id.toString(),
+        jour_depot = dayOfWeek,
+        date_fin_evaluation = evaluationEndDate,
         attribution = attribution,
-        num_tender = numTender,
+        num_tender = tenderNumber,
         download_count = downloadCount,
         code = code
     )
