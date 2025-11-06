@@ -54,10 +54,10 @@ data class AppelConsultationDto(
             cle_appel_consultation = id.toString(),
             jour_depot = dayOfWeek,
             date_fin_evaluation = evaluationEndDate,
-            attribution = attribution,
-            num_tender = tenderNumber,
+            attribution = attribution ?: "",
+            num_tender = tenderNumber.toString(),
             download_count = downloadCount,
-            code = code
+            code = code.toString()
         )
     }
 
@@ -68,10 +68,10 @@ data class AppelConsultationDto(
             date_depot = depositDate,
             jour_depot = dayOfWeek,
             date_fin_evaluation = evaluationEndDate,
-            attribution = attribution,
-            num_tender = tenderNumber,
+            attribution = attribution ?: "",
+            num_tender = tenderNumber.toString(),
             download_count = downloadCount,
-            code = code
+            code = code.toString()
         )
     }
 }

@@ -92,7 +92,7 @@ class ConsultationRepositoryImpl @Inject constructor(
     override suspend fun getConsultationById(id: Int): AppelConsultation? {
         return try {
             // First try to get from local database
-            val local = appDatabase.appelConsultationDao().getAppelConsultationById(id)
+            val local = appDatabase.appelConsultationDao().getConsultationById(id)
             
             // If not found locally or data might be stale, try to fetch from remote
             if (local == null || isDataStale(local.lastUpdated)) {

@@ -7,8 +7,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.farouktouil.farouktouil.core.data.local.converters.Converters
 import com.farouktouil.farouktouil.consultation_feature.data.local.dao.AppelConsultationDao
+import com.farouktouil.farouktouil.consultation_feature.data.local.dao.DocumentDao
 import com.farouktouil.farouktouil.consultation_feature.data.local.dao.RemoteKeysDao as ConsultationRemoteKeysDao
 import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelConsultationEntity
+import com.farouktouil.farouktouil.consultation_feature.data.local.entity.DocumentEntity
 import com.farouktouil.farouktouil.consultation_feature.data.local.entity.RemoteKey as ConsultationRemoteKey
 
 import com.farouktouil.farouktouil.core.data.local.entities.DelivererEntity
@@ -20,6 +22,7 @@ import com.farouktouil.farouktouil.personnel_feature.data.local.dao.PersonnelDao
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_33_34
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_34_35
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_38_39
+import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_39_40
 import com.farouktouil.farouktouil.personnel_feature.data.local.dao.RemoteKeysDao
 import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteKey
 
@@ -32,9 +35,10 @@ import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteK
         PersonnelEntity::class,
         RemoteKey::class,
         AppelConsultationEntity::class,
-        ConsultationRemoteKey::class
+        ConsultationRemoteKey::class,
+        DocumentEntity::class
     ],
-    version = 39, // Incremented version due to schema changes
+    version = 40, // Incremented version due to adding document_entity table
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -55,7 +59,8 @@ abstract class AppDatabase : RoomDatabase() {
                 .addMigrations(
                     MIGRATION_33_34,
                     MIGRATION_34_35,
-                    MIGRATION_38_39
+                    MIGRATION_38_39,
+                    MIGRATION_39_40
                 )
                 .fallbackToDestructiveMigration()
                 .createFromAsset("database/initial_data.db") // Optional: If you have initial data
@@ -72,4 +77,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun remoteKeysDao(): RemoteKeysDao
     abstract fun consultationRemoteKeysDao(): ConsultationRemoteKeysDao
     abstract fun appelConsultationDao(): AppelConsultationDao
+    abstract fun documentDao(): DocumentDao
 }

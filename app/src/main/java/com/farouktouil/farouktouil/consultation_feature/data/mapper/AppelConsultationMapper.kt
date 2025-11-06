@@ -13,9 +13,9 @@ fun AppelConsultationDto.toDomain(): AppelConsultation {
         jour_depot = dayOfWeek,
         date_fin_evaluation = evaluationEndDate,
         attribution = attribution,
-        num_tender = tenderNumber,
+        num_tender = tenderNumber.toString(),
         download_count = downloadCount,
-        code = code
+        code = code.toString()
     )
 }
 

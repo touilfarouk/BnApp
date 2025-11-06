@@ -8,9 +8,9 @@ data class AppelConsultation(
     val jour_depot: String? = null,
     val date_fin_evaluation: String? = null,
     val attribution: String? = null,
-    val num_tender: Int = 0,
+    val num_tender: String = "0",
     val download_count: Int = 0,
-    val code: Int = 0
+    val code: String = "0"
 ) {
     val displayDate: String
         get() = date_depot ?: ""

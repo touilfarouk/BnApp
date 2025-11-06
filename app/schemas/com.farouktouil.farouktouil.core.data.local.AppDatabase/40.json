@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 39,
-    "identityHash": "0ab60109dced3cb5743ed44b0eb9a739",
+    "version": 40,
+    "identityHash": "be9daebdd4c998fd3dd971917fd53259",
     "entities": [
       {
         "tableName": "DelivererEntity",
@@ -459,12 +459,78 @@
           }
         ],
         "foreignKeys": []
+      },
+      {
+        "tableName": "document_entity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `consultationId` INTEGER NOT NULL, `year` TEXT NOT NULL, `fileName` TEXT NOT NULL, `fileUrl` TEXT NOT NULL, FOREIGN KEY(`consultationId`) REFERENCES `appel_consultation`(`cle_appel_consultation`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "consultationId",
+            "columnName": "consultationId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "fileName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileUrl",
+            "columnName": "fileUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "document_consultation_id_idx",
+            "unique": false,
+            "columnNames": [
+              "consultationId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `document_consultation_id_idx` ON `${TABLE_NAME}` (`consultationId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "appel_consultation",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "consultationId"
+            ],
+            "referencedColumns": [
+              "cle_appel_consultation"
+            ]
+          }
+        ]
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0ab60109dced3cb5743ed44b0eb9a739')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'be9daebdd4c998fd3dd971917fd53259')"
     ]
   }
 }

@@ -87,7 +87,8 @@ dependencies {
     implementation(libs.dagger.hilt)
     implementation(libs.androidx.databinding.adapters)
     implementation(libs.dagger.hilt.navigation.compose)
-    
+    implementation(libs.firebase.crashlytics.buildtools)
+
     // Hilt KSP processors
     ksp(libs.dagger.hilt.compiler)
     ksp(libs.dagger.hilt.androidx)

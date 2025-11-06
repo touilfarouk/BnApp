@@ -43,14 +43,20 @@ class AppelConsultationRemoteMediator @Inject constructor(
     }
     
     override suspend fun initialize(): InitializeAction {
-        return InitializeAction.LAUNCH_INITIAL_REFRESH
+        return if (getCachedItemCount() == 0) {
+            Log.d("RemoteMediator", "No cached data, launching initial refresh")
+            InitializeAction.LAUNCH_INITIAL_REFRESH
+        } else {
+            Log.d("RemoteMediator", "Using cached data")
+            InitializeAction.SKIP_INITIAL_REFRESH
+        }
     }
 
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, AppelConsultationEntity>
     ): MediatorResult {
-        Log.d("RemoteMediator", "Load triggered - Type: $loadType")
+        Log.d("RemoteMediator", "Load triggered - Type: $loadType, Query: '$searchQueryText'")
         
         // If we're offline, return success to show cached data
         if (!networkUtils.isNetworkAvailable()) {
@@ -68,8 +74,7 @@ class AppelConsultationRemoteMediator @Inject constructor(
             val page = when (loadType) {
                 LoadType.REFRESH -> {
                     Log.d("RemoteMediator", "REFRESH - Getting first page")
-                    val remoteKeys = getRemoteKeyForLastItem(state)
-                    remoteKeys?.nextKey?.minus(1) ?: 1
+                    1
                 }
                 LoadType.PREPEND -> {
                     Log.d("RemoteMediator", "PREPEND - Not supported, returning success")
@@ -77,10 +82,13 @@ class AppelConsultationRemoteMediator @Inject constructor(
                 }
                 LoadType.APPEND -> {
                     Log.d("RemoteMediator", "APPEND - Getting next page")
-                    val remoteKeys = getRemoteKeyForLastItem(state)
-                        ?: return MediatorResult.Success(endOfPaginationReached = true)
-                    remoteKeys.nextKey ?: return MediatorResult.Success(endOfPaginationReached = true)
-                }      
+                    val remoteKey = getRemoteKeyForLastItem(state)
+                    if (remoteKey?.nextKey == null) {
+                        Log.d("RemoteMediator", "No more pages to load")
+                        return MediatorResult.Success(endOfPaginationReached = true)
+                    }
+                    remoteKey.nextKey
+                }
             }
 
             // Fetch data from the API
@@ -91,20 +99,25 @@ class AppelConsultationRemoteMediator @Inject constructor(
                     search = searchQuery.nom_appel_consultation
                 )
             } catch (e: Exception) {
-                Log.e("RemoteMediator", "Error fetching from API: ${e.message}")
-                throw e
+                Log.e("RemoteMediator", "Error fetching from API: ${e.message}", e)
+                return MediatorResult.Error(e)
             }
 
             if (!response.isSuccessful) {
+                Log.e("RemoteMediator", "API error: ${response.code()} - ${response.message()}")
                 return MediatorResult.Error(HttpException(response))
             }
 
-            val responseBody = response.body() ?: return MediatorResult.Success(endOfPaginationReached = true)
+            val responseBody = response.body()
+            if (responseBody == null) {
+                Log.e("RemoteMediator", "Response body is null")
+                return MediatorResult.Error(NullPointerException("Response body is null"))
+            }
+
             val consultations = responseBody.data
             Log.d("RemoteMediator", "Fetched ${consultations.size} items from API")
 
-            val pagination = responseBody.pagination
-            val endOfPaginationReached = !pagination.hasNext
+            val endOfPaginationReached = consultations.isEmpty()
             
             // Log the first consultation if available
             if (consultations.isNotEmpty()) {
@@ -139,16 +152,19 @@ class AppelConsultationRemoteMediator @Inject constructor(
                         query = searchQuery.nom_appel_consultation
                     )
                 }
-                remoteKeyDao.insertAll(keys)
-
-                // Save consultations to database
-                val entities = consultations.map { it.toEntity() }
-                Log.d("RemoteMediator", "Inserting ${entities.size} entities into database")
-                appelConsultationDao.insertAll(entities)
+                
+                if (keys.isNotEmpty()) {
+                    remoteKeyDao.insertAll(keys)
+                    
+                    // Save consultations to database
+                    val entities = consultations.map { it.toEntity() }
+                    Log.d("RemoteMediator", "Inserting ${entities.size} entities into database")
+                    appelConsultationDao.insertAll(entities)
+                }
             }
 
             Log.d("RemoteMediator", "Load completed successfully")
-            return MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
+            MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
         } catch (e: IOException) {
             if (e is UnknownHostException) {
                 Log.d("RemoteMediator", "No network connection - using cached data")
@@ -162,14 +178,19 @@ class AppelConsultationRemoteMediator @Inject constructor(
             MediatorResult.Success(endOfPaginationReached = true) // Return success to show cached data
         } catch (e: Exception) {
             Log.e("RemoteMediator", "Unexpected error: ${e.message}", e)
-            return MediatorResult.Error(e)
+            MediatorResult.Error(e)
         }
     }
 
     /**
      * Get the remote key for the last item in the paging state.
      */
-    private suspend fun getRemoteKeyForLastItem(@Suppress("UNUSED_PARAMETER") state: PagingState<Int, AppelConsultationEntity>): RemoteKey? {
-        return remoteKeyDao.getLastRemoteKey(searchQuery.nom_appel_consultation)
+    private suspend fun getRemoteKeyForLastItem(state: PagingState<Int, AppelConsultationEntity>): RemoteKey? {
+        // Get the last page that was retrieved, that contained items.
+        // From that last page, get the last item
+        return state.lastItemOrNull()?.let { appelConsultation ->
+            // Get the remote keys of the last item retrieved
+            remoteKeyDao.remoteKeysByConsultationId(appelConsultation.cle_appel_consultation)
+        } ?: remoteKeyDao.getLastRemoteKey(searchQuery.nom_appel_consultation)
     }
 }
