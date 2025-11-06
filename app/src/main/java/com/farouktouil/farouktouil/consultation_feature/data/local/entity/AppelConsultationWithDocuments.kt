@@ -6,7 +6,7 @@ import androidx.room.Relation
 data class AppelConsultationWithDocuments(
     @Embedded val consultation: AppelConsultationEntity,
     @Relation(
-        parentColumn = "cle_appel_consultation",
+        parentColumn = "id",
         entityColumn = "consultationId"
     )
     val documents: List<DocumentEntity> = emptyList()

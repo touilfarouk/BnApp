@@ -8,22 +8,18 @@ import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsul
 @Entity(
     tableName = "appel_consultation",
     indices = [
-        Index(value = ["nom_appel_consultation"]),
-        Index(value = ["date_depot"]),
-        Index(value = ["cle_appel_consultation"], unique = true)
+        Index(value = ["title"]),
+        Index(value = ["depositDate"]),
+        Index(value = ["id"], unique = true)
     ]
 )
 data class AppelConsultationEntity(
     @PrimaryKey
-    val cle_appel_consultation: Int,
-    val nom_appel_consultation: String,
-    val date_depot: String? = null,
-    val jour_depot: String? = null,
-    val date_fin_evaluation: String? = null,
-    val attribution: String? = null,
-    val num_tender: String = "",
-    val download_count: Int = 0,
-    val code: String = "",
+    val id: Int,
+    val title: String,
+    val depositDate: String,
+    val dayOfWeek: String,
+    val tenderNumber: Int,
     val lastUpdated: Long = System.currentTimeMillis()
 ) {
     companion object {
@@ -31,38 +27,27 @@ data class AppelConsultationEntity(
         
         fun fromDomain(domain: AppelConsultation): AppelConsultationEntity {
             return AppelConsultationEntity(
-                cle_appel_consultation = domain.cle_appel_consultation.toIntOrNull() ?: 0,
-                nom_appel_consultation = domain.nom_appel_consultation,
-                date_depot = domain.date_depot,
-                jour_depot = domain.jour_depot,
-                date_fin_evaluation = domain.date_fin_evaluation,
-                attribution = domain.attribution,
-                num_tender = if (domain.num_tender.isEmpty()) "0" else domain.num_tender,
-                download_count = domain.download_count,
-                code = if (domain.code.isEmpty()) "0" else domain.code
+                id = domain.id,
+                title = domain.title,
+                depositDate = domain.depositDate,
+                dayOfWeek = domain.dayOfWeek,
+                tenderNumber = domain.tenderNumber
             )
         }
     }
     
-    fun toDomain(): AppelConsultation {
+    fun toDomain(documents: List<AppelConsultation.Document> = emptyList()): AppelConsultation {
         return AppelConsultation(
-            id = cle_appel_consultation,
-            nom_appel_consultation = nom_appel_consultation,
-            date_depot = date_depot,
-            cle_appel_consultation = cle_appel_consultation.toString(),
-            jour_depot = jour_depot,
-            date_fin_evaluation = date_fin_evaluation,
-            attribution = attribution,
-            num_tender = num_tender,
-            download_count = download_count,
-            code = code
+            id = id,
+            title = title,
+            depositDate = depositDate,
+            dayOfWeek = dayOfWeek,
+            tenderNumber = tenderNumber,
+            documents = documents
         )
     }
     
     fun isExpired(expirationTimeInMillis: Long): Boolean {
         return (System.currentTimeMillis() - lastUpdated) > expirationTimeInMillis
     }
-    
-    val id: Int
-        get() = cle_appel_consultation
 }

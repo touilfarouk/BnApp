@@ -190,7 +190,7 @@ class AppelConsultationRemoteMediator @Inject constructor(
         // From that last page, get the last item
         return state.lastItemOrNull()?.let { appelConsultation ->
             // Get the remote keys of the last item retrieved
-            remoteKeyDao.remoteKeysByConsultationId(appelConsultation.cle_appel_consultation)
+            remoteKeyDao.remoteKeysByConsultationId(appelConsultation.id)
         } ?: remoteKeyDao.getLastRemoteKey(searchQuery.nom_appel_consultation)
     }
 }

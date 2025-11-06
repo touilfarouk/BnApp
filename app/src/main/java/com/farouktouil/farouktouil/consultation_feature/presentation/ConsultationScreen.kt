@@ -75,7 +75,7 @@ fun ConsultationScreen(
                 items(
                     count = consultations.itemCount,
                     key = { index ->
-                        consultations[index]?.cle_appel_consultation ?: index
+                        consultations[index]?.id ?: index
                     }
                 ) { index ->
                     consultations[index]?.let { consultation ->
@@ -122,9 +122,9 @@ fun ConsultationScreen(
 
 @Composable
 fun ConsultationCard(consultation: AppelConsultation) {
-    val title = consultation.nom_appel_consultation.ifEmpty { "Sans titre" }
-    val date = consultation.date_depot ?: "Date inconnue"
-    val id = consultation.cle_appel_consultation
+    val title = consultation.title.ifEmpty { "Sans titre" }
+    val date = consultation.depositDate.ifEmpty { "Date inconnue" }
+    val id = consultation.id
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -158,7 +158,7 @@ fun ConsultationCard(consultation: AppelConsultation) {
                     Text(
                         text = "#$id",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 

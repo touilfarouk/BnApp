@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 40,
-    "identityHash": "be9daebdd4c998fd3dd971917fd53259",
+    "identityHash": "2694b16e39937c7dacb1e9e96fc755cd",
     "entities": [
       {
         "tableName": "DelivererEntity",
@@ -297,60 +297,36 @@
       },
       {
         "tableName": "appel_consultation",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cle_appel_consultation` INTEGER NOT NULL, `nom_appel_consultation` TEXT NOT NULL, `date_depot` TEXT, `jour_depot` TEXT, `date_fin_evaluation` TEXT, `attribution` TEXT, `num_tender` TEXT NOT NULL, `download_count` INTEGER NOT NULL, `code` TEXT NOT NULL, `lastUpdated` INTEGER NOT NULL, PRIMARY KEY(`cle_appel_consultation`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `title` TEXT NOT NULL, `depositDate` TEXT NOT NULL, `dayOfWeek` TEXT NOT NULL, `tenderNumber` INTEGER NOT NULL, `lastUpdated` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
-            "fieldPath": "cle_appel_consultation",
-            "columnName": "cle_appel_consultation",
+            "fieldPath": "id",
+            "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "nom_appel_consultation",
-            "columnName": "nom_appel_consultation",
+            "fieldPath": "title",
+            "columnName": "title",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "date_depot",
-            "columnName": "date_depot",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "jour_depot",
-            "columnName": "jour_depot",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "date_fin_evaluation",
-            "columnName": "date_fin_evaluation",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "attribution",
-            "columnName": "attribution",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "num_tender",
-            "columnName": "num_tender",
+            "fieldPath": "depositDate",
+            "columnName": "depositDate",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "download_count",
-            "columnName": "download_count",
+            "fieldPath": "dayOfWeek",
+            "columnName": "dayOfWeek",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tenderNumber",
+            "columnName": "tenderNumber",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "code",
-            "columnName": "code",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -363,36 +339,36 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "cle_appel_consultation"
+            "id"
           ]
         },
         "indices": [
           {
-            "name": "index_appel_consultation_nom_appel_consultation",
+            "name": "index_appel_consultation_title",
             "unique": false,
             "columnNames": [
-              "nom_appel_consultation"
+              "title"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_appel_consultation_nom_appel_consultation` ON `${TABLE_NAME}` (`nom_appel_consultation`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_appel_consultation_title` ON `${TABLE_NAME}` (`title`)"
           },
           {
-            "name": "index_appel_consultation_date_depot",
+            "name": "index_appel_consultation_depositDate",
             "unique": false,
             "columnNames": [
-              "date_depot"
+              "depositDate"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_appel_consultation_date_depot` ON `${TABLE_NAME}` (`date_depot`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_appel_consultation_depositDate` ON `${TABLE_NAME}` (`depositDate`)"
           },
           {
-            "name": "index_appel_consultation_cle_appel_consultation",
+            "name": "index_appel_consultation_id",
             "unique": true,
             "columnNames": [
-              "cle_appel_consultation"
+              "id"
             ],
             "orders": [],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_appel_consultation_cle_appel_consultation` ON `${TABLE_NAME}` (`cle_appel_consultation`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_appel_consultation_id` ON `${TABLE_NAME}` (`id`)"
           }
         ],
         "foreignKeys": []
@@ -462,7 +438,7 @@
       },
       {
         "tableName": "document_entity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `consultationId` INTEGER NOT NULL, `year` TEXT NOT NULL, `fileName` TEXT NOT NULL, `fileUrl` TEXT NOT NULL, FOREIGN KEY(`consultationId`) REFERENCES `appel_consultation`(`cle_appel_consultation`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `consultationId` INTEGER NOT NULL, `year` TEXT NOT NULL, `fileName` TEXT NOT NULL, `fileUrl` TEXT NOT NULL, FOREIGN KEY(`consultationId`) REFERENCES `appel_consultation`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -521,7 +497,7 @@
               "consultationId"
             ],
             "referencedColumns": [
-              "cle_appel_consultation"
+              "id"
             ]
           }
         ]
@@ -530,7 +506,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'be9daebdd4c998fd3dd971917fd53259')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2694b16e39937c7dacb1e9e96fc755cd')"
     ]
   }
 }

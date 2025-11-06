@@ -27,32 +27,32 @@ interface AppelConsultationDao {
     suspend fun update(consultation: AppelConsultationEntity)
     
     // Get operations
-    @Query("SELECT * FROM appel_consultation WHERE cle_appel_consultation = :id")
+    @Query("SELECT * FROM appel_consultation WHERE id = :id")
     suspend fun getConsultationById(id: Int): AppelConsultationEntity?
     
-    @Query("SELECT * FROM appel_consultation WHERE cle_appel_consultation = :key")
+    @Query("SELECT * FROM appel_consultation WHERE id = :key")
     suspend fun getByKey(key: String): AppelConsultationEntity?
     
-    @Query("SELECT * FROM appel_consultation ORDER BY cle_appel_consultation DESC LIMIT 1")
+    @Query("SELECT * FROM appel_consultation ORDER BY id DESC LIMIT 1")
     suspend fun getFirstConsultation(): AppelConsultationEntity?
     
     // Get with relationships
     @Transaction
-    @Query("SELECT * FROM appel_consultation WHERE cle_appel_consultation = :id")
+    @Query("SELECT * FROM appel_consultation WHERE id = :id")
     suspend fun getConsultationWithDocuments(id: Int): AppelConsultationWithDocuments?
     
     // Get all operations
-    @Query("SELECT * FROM appel_consultation ORDER BY cle_appel_consultation DESC")
+    @Query("SELECT * FROM appel_consultation ORDER BY id DESC")
     fun getAllConsultations(): Flow<List<AppelConsultationEntity>>
     
     // Search operations
     @Query("""
         SELECT * FROM appel_consultation 
         WHERE (:query = '' OR 
-               nom_appel_consultation LIKE '%' || :query || '%' OR
-               cle_appel_consultation LIKE '%' || :query || '%')
-          AND (:dateQuery = '' OR date_depot LIKE '%' || :dateQuery || '%')
-        ORDER BY CAST(cle_appel_consultation AS INTEGER) DESC
+               title LIKE '%' || :query || '%' OR
+               CAST(id AS TEXT) LIKE '%' || :query || '%')
+          AND (:dateQuery = '' OR depositDate LIKE '%' || :dateQuery || '%')
+        ORDER BY id DESC
         LIMIT :limit OFFSET :offset
     """)
     suspend fun searchConsultations(
@@ -63,13 +63,13 @@ interface AppelConsultationDao {
     ): List<AppelConsultationEntity>
     
     // Delete operations
-    @Query("DELETE FROM appel_consultation WHERE cle_appel_consultation = :id")
+    @Query("DELETE FROM appel_consultation WHERE id = :id")
     suspend fun deleteById(id: Int)
     
     @Query("""
         DELETE FROM appel_consultation 
-        WHERE nom_appel_consultation LIKE '%' || :query || '%' 
-           OR cle_appel_consultation LIKE '%' || :query || '%'
+        WHERE title LIKE '%' || :query || '%' 
+           OR CAST(id AS TEXT) LIKE '%' || :query || '%'
     """)
     suspend fun deleteByQuery(query: String)
     
@@ -83,24 +83,24 @@ interface AppelConsultationDao {
     @Query("""
         SELECT COUNT(*) FROM appel_consultation 
         WHERE (:query = '' OR 
-               nom_appel_consultation LIKE '%' || :query || '%' OR
-               date_depot LIKE '%' || :query || '%' OR
-               cle_appel_consultation LIKE '%' || :query || '%')
+               title LIKE '%' || :query || '%' OR
+               depositDate LIKE '%' || :query || '%' OR
+               CAST(id AS TEXT) LIKE '%' || :query || '%')
     """)
     suspend fun getCount(query: String = ""): Int
     
     // Check if exists
-    @Query("SELECT EXISTS(SELECT * FROM appel_consultation WHERE cle_appel_consultation = :id)")
+    @Query("SELECT EXISTS(SELECT * FROM appel_consultation WHERE id = :id)")
     suspend fun isIdExists(id: Int): Boolean
     
     // Paging source
     @Query("""
         SELECT * FROM appel_consultation 
         WHERE (:query = '' OR 
-               nom_appel_consultation LIKE '%' || :query || '%' OR
-               cle_appel_consultation LIKE '%' || :query || '%')
-          AND (:dateQuery = '' OR date_depot LIKE '%' || :dateQuery || '%')
-        ORDER BY CAST(cle_appel_consultation AS INTEGER) DESC
+               title LIKE '%' || :query || '%' OR
+               CAST(id AS TEXT) LIKE '%' || :query || '%')
+          AND (:dateQuery = '' OR depositDate LIKE '%' || :dateQuery || '%')
+        ORDER BY id DESC
     """)
     fun getAppelConsultationPagingSource(
         query: String = "",

@@ -126,9 +126,9 @@ class ConsultationRepositoryImpl @Inject constructor(
             val firstConsultation = appelConsultationDao.getFirstConsultation()
             if (firstConsultation != null) {
                 Log.d("ConsultationRepo", "First offline consultation: $firstConsultation")
-                Log.d("ConsultationRepo", "Details - ID: ${firstConsultation.cle_appel_consultation}, " +
-                        "Name: ${firstConsultation.nom_appel_consultation}, " +
-                        "Date: ${firstConsultation.date_depot}")
+                Log.d("ConsultationRepo", "Details - ID: ${firstConsultation.id}, " +
+                        "Title: ${firstConsultation.title}, " +
+                        "Date: ${firstConsultation.depositDate}")
             } else {
                 Log.d("ConsultationRepo", "No consultations found in local database")
             }
