@@ -18,6 +18,29 @@ interface DocumentDao {
     
     @Query("SELECT * FROM document_entity WHERE consultationId = :consultationId")
     fun getDocumentsByConsultationId(consultationId: Int): Flow<List<DocumentEntity>>
+
+    @Query("SELECT * FROM document_entity WHERE consultationId = :consultationId")
+    suspend fun getDocumentsSnapshotByConsultationId(consultationId: Int): List<DocumentEntity>
+
+    @Query("SELECT * FROM document_entity WHERE consultationId IN (:consultationIds)")
+    suspend fun getDocumentsByConsultationIds(consultationIds: List<Int>): List<DocumentEntity>
+
+    @Query(
+        "SELECT * FROM document_entity WHERE consultationId = :consultationId AND fileUrl = :fileUrl LIMIT 1"
+    )
+    suspend fun getDocumentByConsultationAndUrl(consultationId: Int, fileUrl: String): DocumentEntity?
+
+    @Query(
+        "UPDATE document_entity SET localFilePath = :localFilePath, fileSize = :fileSize, lastUpdated = :lastUpdated " +
+            "WHERE consultationId = :consultationId AND fileUrl = :fileUrl"
+    )
+    suspend fun updateDocumentCache(
+        consultationId: Int,
+        fileUrl: String,
+        localFilePath: String?,
+        fileSize: Long?,
+        lastUpdated: Long
+    )
     
     @Query("SELECT * FROM document_entity WHERE id = :documentId")
     suspend fun getDocumentById(documentId: Int): DocumentEntity?
@@ -28,6 +51,9 @@ interface DocumentDao {
     @Query("DELETE FROM document_entity WHERE consultationId = :consultationId")
     suspend fun deleteByConsultationId(consultationId: Int)
     
+    @Query("DELETE FROM document_entity WHERE consultationId = :consultationId AND fileUrl NOT IN (:fileUrls)")
+    suspend fun deleteDocumentsNotIn(consultationId: Int, fileUrls: List<String>)
+
     @Query("DELETE FROM document_entity")
     suspend fun deleteAll()
 }

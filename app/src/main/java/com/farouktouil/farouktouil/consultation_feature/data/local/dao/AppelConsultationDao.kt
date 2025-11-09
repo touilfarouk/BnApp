@@ -1,8 +1,6 @@
 package com.farouktouil.farouktouil.consultation_feature.data.local.dao
 
-import android.util.Log
 import androidx.paging.PagingSource
-import androidx.paging.PagingState
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -92,6 +90,19 @@ interface AppelConsultationDao {
     // Check if exists
     @Query("SELECT EXISTS(SELECT * FROM appel_consultation WHERE id = :id)")
     suspend fun isIdExists(id: Int): Boolean
+    
+    @Transaction
+    @Query("""
+        SELECT * FROM appel_consultation 
+        WHERE title LIKE :query
+        ORDER BY id DESC
+        LIMIT :limit OFFSET :offset
+    """)
+    suspend fun getConsultationsWithDocuments(
+        query: String,
+        limit: Int,
+        offset: Int
+    ): List<AppelConsultationWithDocuments>
     
     // Paging source
     @Query("""

@@ -1,27 +1,33 @@
 package com.farouktouil.farouktouil.core.presentation.components
 
+import android.app.DownloadManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
+import android.os.Environment
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -31,7 +37,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.net.URL
 
 @Composable
 fun DocumentList(
@@ -86,7 +94,8 @@ fun DocumentItem(
 @Composable
 fun PdfViewerDialog(
     pdfUrl: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    localFilePath: String? = null
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -96,8 +105,12 @@ fun PdfViewerDialog(
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
+    var scale by remember { mutableFloatStateOf(1f) }
 
     val tempFile = remember { File(context.cacheDir, "temp_pdf.pdf") }
+    val documentName = remember(pdfUrl) {
+        Uri.parse(pdfUrl).lastPathSegment ?: "document.pdf"
+    }
 
     // Download and display PDF
     LaunchedEffect(pdfUrl) {
@@ -105,25 +118,12 @@ fun PdfViewerDialog(
             isLoading = true
             error = null
 
-            // Download PDF to a temporary file
             withContext(Dispatchers.IO) {
                 try {
-                    val url = java.net.URL(pdfUrl)
-                    val connection = url.openConnection()
-                    connection.connect()
+                    val sourceFile = resolveSourceFile(localFilePath, tempFile, pdfUrl)
 
-                    val inputStream = connection.getInputStream()
-                    val outputStream = FileOutputStream(tempFile)
-
-                    inputStream.use { input ->
-                        outputStream.use { output ->
-                            input.copyTo(output)
-                        }
-                    }
-
-                    // Open the PDF file
                     val parcelFileDescriptor = android.os.ParcelFileDescriptor.open(
-                        tempFile,
+                        sourceFile,
                         android.os.ParcelFileDescriptor.MODE_READ_ONLY
                     )
 
@@ -138,6 +138,7 @@ fun PdfViewerDialog(
                                 )
                                 page.render(newBitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                                 bitmap = newBitmap
+                                scale = 1f
                             }
                         }
                     }
@@ -193,9 +194,17 @@ fun PdfViewerDialog(
                         text = "${currentPage + 1} / $pageCount",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    
-                    // Empty view for layout balance
-                    Spacer(modifier = Modifier.width(64.dp))
+
+                    IconButton(
+                        onClick = {
+                            enqueuePdfDownload(context, pdfUrl, documentName)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = "Télécharger le document"
+                        )
+                    }
                 }
 
                 // PDF Content
@@ -218,10 +227,29 @@ fun PdfViewerDialog(
                             )
                         }
                         bitmap != null -> {
+                            val scaledModifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .pointerInput(currentPage, bitmap) {
+                                    detectTransformGestures { _, _, zoom, _ ->
+                                        val newScale = (scale * zoom).coerceIn(1f, 4f)
+                                        scale = newScale
+                                    }
+                                }
+                                .pointerInput(currentPage) {
+                                    detectTapGestures(onDoubleTap = {
+                                        scale = if (scale > 1f) 1f else 2f
+                                    })
+                                }
+                                .graphicsLayer(
+                                    scaleX = scale,
+                                    scaleY = scale
+                                )
+
                             Image(
                                 bitmap = bitmap!!.asImageBitmap(),
                                 contentDescription = "PDF Page ${currentPage + 1}",
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = scaledModifier
                             )
                         }
                     }
@@ -273,9 +301,78 @@ fun PdfViewerDialog(
                         )
                     }
                 }
+
+                if (bitmap != null) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Slider(
+                            value = scale,
+                            onValueChange = { scale = it.coerceIn(1f, 4f) },
+                            valueRange = 1f..4f,
+                            steps = 2,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text(
+                            text = "Zoom: ${(scale * 100).toInt()}%",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
             }
         }
     }
+}
+
+private fun enqueuePdfDownload(context: Context, pdfUrl: String, fileName: String) {
+    try {
+        val sanitizedName = if (fileName.lowercase().endsWith(".pdf")) fileName else "$fileName.pdf"
+        val request = DownloadManager.Request(Uri.parse(pdfUrl))
+            .setTitle(sanitizedName)
+            .setDescription("Téléchargement du document")
+            .setMimeType("application/pdf")
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, sanitizedName)
+            .setAllowedOverMetered(true)
+
+        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager
+        if (downloadManager != null) {
+            downloadManager.enqueue(request)
+            Toast.makeText(context, "Téléchargement démarré", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Service de téléchargement indisponible", Toast.LENGTH_LONG).show()
+        }
+    } catch (e: Exception) {
+        Toast.makeText(context, "Échec du téléchargement", Toast.LENGTH_LONG).show()
+        Log.e("PdfViewer", "Error enqueueing download", e)
+    }
+}
+
+private fun resolveSourceFile(
+    localFilePath: String?,
+    tempFile: File,
+    pdfUrl: String
+): File {
+    localFilePath?.let { path ->
+        val cachedFile = File(path)
+        if (cachedFile.exists()) {
+            return cachedFile
+        }
+    }
+
+    val connection = URL(pdfUrl).openConnection()
+    connection.connect()
+
+    connection.getInputStream().use { input ->
+        FileOutputStream(tempFile).use { output ->
+            input.copyTo(output)
+        }
+    }
+
+    return tempFile
 }
 
 private fun updatePdfPage(

@@ -6,9 +6,12 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
+import com.farouktouil.farouktouil.consultation_feature.data.local.cache.DocumentCacheManager
 import com.farouktouil.farouktouil.consultation_feature.data.local.dao.AppelConsultationDao
+import com.farouktouil.farouktouil.consultation_feature.data.local.dao.DocumentDao
 import com.farouktouil.farouktouil.consultation_feature.data.local.dao.RemoteKeysDao
 import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelConsultationEntity
+import com.farouktouil.farouktouil.consultation_feature.data.local.entity.DocumentEntity
 import com.farouktouil.farouktouil.consultation_feature.data.local.entity.RemoteKey
 import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntity
 import com.farouktouil.farouktouil.consultation_feature.domain.model.ConsultationSearchQuery
@@ -23,11 +26,13 @@ import javax.inject.Inject
 class AppelConsultationRemoteMediator @Inject constructor(
     private val appDatabase: AppDatabase,
     private val consultationApiService: ConsultationApiService,
+    private val documentCacheManager: DocumentCacheManager,
     private val searchQuery: ConsultationSearchQuery,
     private val networkUtils: NetworkUtils
 ) : RemoteMediator<Int, AppelConsultationEntity>() {
 
     private val appelConsultationDao: AppelConsultationDao = appDatabase.appelConsultationDao()
+    private val documentDao: DocumentDao = appDatabase.documentDao()
     private val remoteKeyDao: RemoteKeysDao = appDatabase.consultationRemoteKeysDao()
     
     private val searchQueryText = searchQuery.nom_appel_consultation
@@ -43,13 +48,8 @@ class AppelConsultationRemoteMediator @Inject constructor(
     }
     
     override suspend fun initialize(): InitializeAction {
-        return if (getCachedItemCount() == 0) {
-            Log.d("RemoteMediator", "No cached data, launching initial refresh")
-            InitializeAction.LAUNCH_INITIAL_REFRESH
-        } else {
-            Log.d("RemoteMediator", "Using cached data")
-            InitializeAction.SKIP_INITIAL_REFRESH
-        }
+        Log.d("RemoteMediator", "Launching initial refresh to keep data and documents in sync")
+        return InitializeAction.LAUNCH_INITIAL_REFRESH
     }
 
     override suspend fun load(
@@ -118,12 +118,43 @@ class AppelConsultationRemoteMediator @Inject constructor(
             Log.d("RemoteMediator", "Fetched ${consultations.size} items from API")
 
             val endOfPaginationReached = consultations.isEmpty()
+
+            // Prepare documents for caching outside of the database transaction
+            val documentsByConsultation = mutableMapOf<Int, List<DocumentEntity>>()
+            for (consultation in consultations) {
+                val documents = consultation.documents
+                if (documents.isNotEmpty()) {
+                    val existing = documentDao.getDocumentsSnapshotByConsultationId(consultation.id)
+                    val prepared = documentCacheManager.prepareDocuments(
+                        consultationId = consultation.id,
+                        documents = documents,
+                        existingDocuments = existing
+                    )
+                    documentsByConsultation[consultation.id] = prepared
+                } else {
+                    documentsByConsultation[consultation.id] = emptyList()
+                }
+            }
+
+            // Log consultations and their documents
+            consultations.forEachIndexed { index, consultation ->
+                Log.d("API_DOCUMENTS", "\n=== Consultation #${index + 1} ===")
+                Log.d("API_DOCUMENTS", "ID: ${consultation.id}")
+                Log.d("API_DOCUMENTS", "Title: ${consultation.title}")
+                
+                val documents = consultation.documents
+                Log.d("API_DOCUMENTS", "Document Count: ${documents.size}")
+                
+                documents.forEachIndexed { docIndex, document ->
+                    Log.d("API_DOCUMENTS", "  Document #${docIndex + 1}:")
+                    Log.d("API_DOCUMENTS", "    File Name: ${document.fileName}")
+                    Log.d("API_DOCUMENTS", "    File URL: ${document.fileUrl}")
+                    Log.d("API_DOCUMENTS", "    Year: ${document.year}")
+                }
+                Log.d("API_DOCUMENTS", "======================\n")
+            }
             
-            // Log the first consultation if available
-            if (consultations.isNotEmpty()) {
-                val first = consultations.first()
-                Log.d("RemoteMediator", "First consultation in response: ${first.id} - ${first.title}")
-            } else {
+            if (consultations.isEmpty()) {
                 Log.d("RemoteMediator", "No consultations in response")
             }
 
@@ -135,32 +166,41 @@ class AppelConsultationRemoteMediator @Inject constructor(
                     Log.d("RemoteMediator", "Clearing existing data for refresh")
                     remoteKeyDao.clearRemoteKeys()
                     appelConsultationDao.clearAll()
+                    documentDao.deleteAll()
                 }
 
                 // Calculate next and prev keys
-                val prevKey = if (page == 1) null else page - 1
-                val nextKey = if (endOfPaginationReached) null else page + 1
                 
-                Log.d("RemoteMediator", "Page: $page, Prev: $prevKey, Next: $nextKey, End: $endOfPaginationReached")
+                // Save consultations and their documents
+                consultations.forEach { consultation ->
+                    val consultationEntity = consultation.toEntity()
+                    appelConsultationDao.insert(consultationEntity)
 
-                // Save the remote key for pagination
-                val keys = consultations.map { consultation ->
-                    RemoteKey(
-                        consultationId = consultation.id,
-                        prevKey = prevKey,
-                        nextKey = nextKey,
-                        query = searchQuery.nom_appel_consultation
-                    )
+                    val preparedDocuments = documentsByConsultation[consultation.id] ?: emptyList()
+                    if (preparedDocuments.isNotEmpty()) {
+                        val incomingUrls = consultation.documents.map { it.fileUrl }
+                        if (incomingUrls.isNotEmpty()) {
+                            documentDao.deleteDocumentsNotIn(consultation.id, incomingUrls)
+                        } else {
+                            documentDao.deleteByConsultationId(consultation.id)
+                        }
+                        documentDao.insertAll(preparedDocuments)
+                    } else {
+                        documentDao.deleteByConsultationId(consultation.id)
+                    }
                 }
                 
-                if (keys.isNotEmpty()) {
-                    remoteKeyDao.insertAll(keys)
-                    
-                    // Save consultations to database
-                    val entities = consultations.map { it.toEntity() }
-                    Log.d("RemoteMediator", "Inserting ${entities.size} entities into database")
-                    appelConsultationDao.insertAll(entities)
-                }
+                // Save remote key for next page
+                remoteKeyDao.insertAll(
+                    listOf(
+                        RemoteKey(
+                            consultationId = consultations.last().id,
+                            prevKey = if (page == 1) null else page - 1,
+                            nextKey = if (consultations.size < 10) null else page + 1,
+                            query = searchQuery.nom_appel_consultation
+                        )
+                    )
+                )
             }
 
             Log.d("RemoteMediator", "Load completed successfully")

@@ -9,7 +9,14 @@ data class AppelConsultation(
     val documents: List<Document>
 ) {
     data class Document(
+        val year: String,
         val fileName: String,
-        val fileUrl: String
-    )
+        val fileUrl: String,
+        val localFilePath: String? = null,
+        val fileSize: Long? = null,
+        val lastUpdated: Long = System.currentTimeMillis()
+    ) {
+        val isAvailableOffline: Boolean
+            get() = !localFilePath.isNullOrBlank()
+    }
 }

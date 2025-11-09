@@ -43,6 +43,7 @@ data class AppelConsultationDto(
             tenderNumber = tenderNumber,
             documents = documents.map { 
                 AppelConsultation.Document(
+                    year = it.year,
                     fileName = it.fileName,
                     fileUrl = it.fileUrl
                 )

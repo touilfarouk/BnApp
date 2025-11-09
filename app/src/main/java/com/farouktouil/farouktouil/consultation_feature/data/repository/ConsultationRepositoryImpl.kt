@@ -4,12 +4,14 @@ import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntity
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.farouktouil.farouktouil.consultation_feature.data.local.cache.DocumentCacheManager
 import com.farouktouil.farouktouil.consultation_feature.data.local.dao.AppelConsultationDao
+import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelConsultationEntity
+import com.farouktouil.farouktouil.consultation_feature.data.local.entity.AppelConsultationWithDocuments
 import com.farouktouil.farouktouil.consultation_feature.data.mapper.toDomain
-import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntities
+import com.farouktouil.farouktouil.consultation_feature.data.mapper.toEntity
 import com.farouktouil.farouktouil.consultation_feature.data.remote.AppelConsultationRemoteMediator
 import com.farouktouil.farouktouil.consultation_feature.data.remote.ConsultationApiService
 import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsultation
@@ -23,6 +25,7 @@ import javax.inject.Inject
 class ConsultationRepositoryImpl @Inject constructor(
     private val appDatabase: AppDatabase,
     private val consultationApiService: ConsultationApiService,
+    private val documentCacheManager: DocumentCacheManager,
     private val networkUtils: com.farouktouil.farouktouil.core.util.NetworkUtils
 ) : ConsultationRepository {
 
@@ -31,14 +34,9 @@ class ConsultationRepositoryImpl @Inject constructor(
 
     @OptIn(ExperimentalPagingApi::class)
     override fun getConsultationCalls(searchQuery: ConsultationSearchQuery): Flow<PagingData<AppelConsultation>> {
-        val nomAppelConsultation = searchQuery.nom_appel_consultation ?: ""
-        val query = "%$nomAppelConsultation%"
+        val nomAppelConsultation = searchQuery.nom_appel_consultation
+        val query = if (nomAppelConsultation.isNotBlank()) "%$nomAppelConsultation%" else "%"
         Log.d("ConsultationRepo", "Getting consultation calls with query: $query")
-        
-        val pagingSourceFactory = { 
-            Log.d("ConsultationRepo", "Creating new PagingSource")
-            appelConsultationDao.getAppelConsultationPagingSource(query) 
-        }
         
         return Pager(
             config = PagingConfig(
@@ -50,12 +48,22 @@ class ConsultationRepositoryImpl @Inject constructor(
             remoteMediator = AppelConsultationRemoteMediator(
                 appDatabase = appDatabase,
                 consultationApiService = consultationApiService,
+                documentCacheManager = documentCacheManager,
                 searchQuery = searchQuery,
                 networkUtils = networkUtils
             ),
-            pagingSourceFactory = pagingSourceFactory
-        ).flow.map { pagingData ->
-            pagingData.map { it.toDomain() }
+            pagingSourceFactory = {
+                appelConsultationDao.getAppelConsultationPagingSource(
+                    query = query,
+                    dateQuery = ""
+                )
+            }
+        ).flow.map { pagingData: PagingData<AppelConsultationEntity> ->
+            pagingData.map { entity ->
+                val withDocuments: AppelConsultationWithDocuments? =
+                    appelConsultationDao.getConsultationWithDocuments(entity.id)
+                withDocuments?.toDomain() ?: entity.toDomain()
+            }
         }
     }
 

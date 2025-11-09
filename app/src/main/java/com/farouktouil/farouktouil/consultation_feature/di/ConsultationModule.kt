@@ -1,5 +1,6 @@
 package com.farouktouil.farouktouil.consultation_feature.di
 
+import com.farouktouil.farouktouil.consultation_feature.data.local.cache.DocumentCacheManager
 import com.farouktouil.farouktouil.consultation_feature.data.remote.ConsultationApiService
 import com.farouktouil.farouktouil.consultation_feature.data.repository.ConsultationRepositoryImpl
 import com.farouktouil.farouktouil.consultation_feature.domain.repository.ConsultationRepository
@@ -21,9 +22,15 @@ object ConsultationModule {
     fun provideConsultationRepository(
         db: AppDatabase,
         api: ConsultationApiService,
+        documentCacheManager: DocumentCacheManager,
         networkUtils: NetworkUtils
     ): ConsultationRepository {
-        return ConsultationRepositoryImpl(db, api, networkUtils)
+        return ConsultationRepositoryImpl(
+            appDatabase = db,
+            consultationApiService = api,
+            documentCacheManager = documentCacheManager,
+            networkUtils = networkUtils
+        )
     }
 
     @Provides

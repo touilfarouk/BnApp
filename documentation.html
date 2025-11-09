@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consultation Module Guide</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 2rem; color: #222; }
+        h1, h2, h3 { color: #1b4b91; }
+        code, pre { background: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 4px; }
+        pre { padding: 1rem; overflow-x: auto; }
+        ul { margin-left: 1.5rem; }
+        .callout { background: #eef5ff; border-left: 4px solid #1b4b91; padding: 1rem; margin: 1.5rem 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+        th, td { border: 1px solid #d9d9d9; padding: 0.6rem; text-align: left; }
+        th { background: #f0f6ff; }
+    </style>
+</head>
+<body>
+    <h1>Offline-First Appel à Consultation Module</h1>
+    <p>
+        This document walks students through the full lifecycle of building the offline-capable
+        “Appel à Consultation” feature found in the <code>BnApp</code> project. It covers the
+        architecture, required Android components, caching workflow, and verification steps so you
+        can reproduce or extend the module in your own apps.
+    </p>
+
+    <h2>1. Learning Outcomes</h2>
+    <ul>
+        <li>Design an offline-first feature backed by Room and the Paging 3 library.</li>
+        <li>Persist remote PDFs locally and serve them from cache when the network is unavailable.</li>
+        <li>Structure the data, domain, and presentation layers to keep concerns separated.</li>
+        <li>Implement background synchronization with <code>RemoteMediator</code>.</li>
+    </ul>
+
+    <h2>2. Prerequisites</h2>
+    <table>
+        <tr><th>Concept</th><th>Why it Matters</th></tr>
+        <tr><td>Room Persistence Library</td><td>Stores consultations and document metadata locally.</td></tr>
+        <tr><td>Paging 3</td><td>Provides seamless paging with network + database sources.</td></tr>
+        <tr><td>Retrofit + OkHttp</td><td>Handles API requests and PDF downloads.</td></tr>
+        <tr><td>Jetpack Compose</td><td>Builds the UI screens and dialogs.</td></tr>
+        <tr><td>Hilt Dependency Injection</td><td>Injects database, repositories, and utilities cleanly.</td></tr>
+    </table>
+
+    <h2>3. Architecture Overview</h2>
+    <div class="callout">
+        <strong>Layers:</strong>
+        <ul>
+            <li><strong>Data</strong>: Room DAOs, entities, remote DTOs, and the <code>AppelConsultationRemoteMediator</code>.</li>
+            <li><strong>Domain</strong>: Immutable models (e.g. <code>AppelConsultation</code>), repositories, and use-cases.</li>
+            <li><strong>Presentation</strong>: Compose screens (<code>ConsultationScreen</code>) and reusable components (<code>PdfViewerDialog</code>).</li>
+        </ul>
+    </div>
+
+    <h2>4. Implementation Steps</h2>
+    <h3>4.1 Define the Database Layer</h3>
+    <ol>
+        <li>Create entities in <code>consultation_feature/data/local/entity/</code>:
+            <ul>
+                <li><code>AppelConsultationEntity</code> holds consultation metadata.</li>
+                <li><code>DocumentEntity</code> tracks PDF URLs and cached file paths (<code>localFilePath</code>, <code>fileSize</code>, <code>lastUpdated</code>).</li>
+            </ul>
+        </li>
+        <li>Expose DAOs in <code>data/local/dao/</code> for consultations and documents.
+            <ul>
+                <li><code>AppelConsultationDao</code> includes search and paging queries.</li>
+                <li><code>DocumentDao</code> updates cache metadata and prunes stale documents.</li>
+            </ul>
+        </li>
+        <li>Register migrations in <code>core/data/local/AppDatabase.kt</code> (e.g. <code>MIGRATION_41_42</code>) to add new columns safely.</li>
+    </ol>
+
+    <h3>4.2 Fetch Remote Data</h3>
+    <ol>
+        <li>Describe API contracts in <code>ConsultationApiService</code> with Retrofit.</li>
+        <li>Create DTOs in <code>data/remote/dto</code> and mapping methods (<code>AppelConsultationDto.toDomain()</code> and <code>.toEntity()</code>).</li>
+        <li>Inject API + database via <code>ConsultationModule</code>.</li>
+    </ol>
+
+    <h3>4.3 Implement Offline Caching</h3>
+    <ol>
+        <li>Introduce <code>DocumentCacheManager</code> to download PDFs with OkHttp and store them under <code>filesDir/consultation_documents</code>.</li>
+        <li>Inside <code>AppelConsultationRemoteMediator</code>:
+            <ul>
+                <li>Fetch paged consultations from the API.</li>
+                <li>Call <code>DocumentCacheManager.prepareDocuments()</code> before database writes.</li>
+                <li>Insert documents with local paths and remove entries not present in the latest payload.</li>
+            </ul>
+        </li>
+        <li>Expose paged data via <code>ConsultationRepositoryImpl</code> and <code>GetConsultationCallsUseCase</code>.</li>
+    </ol>
+
+    <h3>4.4 Compose UI</h3>
+    <ol>
+        <li>Use <code>ConsultationViewModel</code> to expose <code>PagingData&lt;AppelConsultation&gt;</code>.</li>
+        <li>Display consultations in <code>consultation_feature/presentation/ConsultationScreen.kt</code> with search filters and list items.</li>
+        <li>Trigger <code>PdfViewerDialog</code> on document tap. The dialog now calls <code>resolveSourceFile()</code> to open cached PDFs offline.</li>
+    </ol>
+
+    <h2>5. Cleanup Performed in This Session</h2>
+    <ul>
+        <li>Removed unused duplicate screen (<code>AppelConsultationScreen.kt</code>) and legacy PDF viewer implementation.</li>
+        <li>Deleted obsolete paging helper (<code>ConsultationWithDocumentsPagingSource.kt</code>) and empty data source placeholder.</li>
+        <li>Simplified <code>AppelConsultationDao</code> by dropping the redundant paging method.</li>
+        <li>Ensured only <code>consultation_feature/presentation/ConsultationScreen.kt</code> remains the single source of truth.</li>
+    </ul>
+
+    <h2>6. Testing Checklist</h2>
+    <ul>
+        <li>Run <code>./gradlew app:assembleDebug</code> to ensure compilation and migrations succeed.</li>
+        <li>Launch the consultation screen with an active network to populate the database.</li>
+        <li>Disable the network and open the same documents; confirm <code>PdfViewerDialog</code> renders from cache.</li>
+        <li>Clear app storage and retry to verify migrations set defaults correctly.</li>
+    </ul>
+
+    <h2>7. Extension Ideas for Students</h2>
+    <ul>
+        <li>Add a “Download All” action that prefetches every document in the background.</li>
+        <li>Display download status and file size in the UI using the cached metadata.</li>
+        <li>Implement conflict resolution when remote PDFs are updated.</li>
+        <li>Schedule periodic sync with WorkManager to refresh consultations automatically.</li>
+    </ul>
+
+    <h2>8. Additional Resources</h2>
+    <ul>
+        <li><a href="https://developer.android.com/topic/libraries/architecture/paging/v3-overview">Paging 3 Guide</a></li>
+        <li><a href="https://developer.android.com/training/data-storage/room">Room Documentation</a></li>
+        <li><a href="https://developer.android.com/jetpack/compose">Jetpack Compose Overview</a></li>
+    </ul>
+
+    <p>
+        With these steps, students can replicate the offline-ready consultation module and understand
+        how each layer collaborates to deliver a resilient user experience.
+    </p>
+</body>
+</html>
