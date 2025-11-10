@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -94,7 +95,9 @@ fun OrderScreen(
                         contentDescription = "No orders illustration",
                         modifier = Modifier
                             .size(880.dp) // adjust size as needed
-                            .padding(0.dp)
+                            .clip(RoundedCornerShape(24.dp)) // Rounded corners
+                            .background(Color.LightGray.copy(alpha = 0.2f)) // Optional subtle background
+                            .padding(10.dp)
                     )
                 }
             } else {

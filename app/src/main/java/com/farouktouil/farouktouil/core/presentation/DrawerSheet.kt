@@ -178,6 +178,25 @@ fun DrawerSheet(navController: NavController, drawerState: DrawerState, scope: C
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
+                // News
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.nav_news), style = MaterialTheme.typography.titleMedium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(ScreenRoutes.NewsScreen.route) {
+                            popUpTo(ScreenRoutes.NewsScreen.route) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                Divider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
                 // Barcode Generator
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.nav_barcode_generator), style = MaterialTheme.typography.titleMedium) },

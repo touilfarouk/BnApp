@@ -7,6 +7,8 @@ import com.farouktouil.farouktouil.core.data.local.AppDatabase
 import com.farouktouil.farouktouil.core.data.local.DelivererDao
 import com.farouktouil.farouktouil.core.data.local.OrderDao
 import com.farouktouil.farouktouil.core.data.local.ProductDao
+import com.farouktouil.farouktouil.news_feature.data.local.dao.NewsDao
+import com.farouktouil.farouktouil.news_feature.data.local.dao.NewsRemoteKeysDao
 
 import com.farouktouil.farouktouil.personnel_feature.data.local.dao.PersonnelDao
 import com.farouktouil.farouktouil.personnel_feature.data.local.dao.RemoteKeysDao
@@ -65,5 +67,17 @@ object DatabaseModule {
     @Singleton
     fun provideAppelConsultationDao(appDatabase: AppDatabase): AppelConsultationDao {
         return appDatabase.appelConsultationDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsDao(appDatabase: AppDatabase): NewsDao {
+        return appDatabase.newsDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsRemoteKeysDao(appDatabase: AppDatabase): NewsRemoteKeysDao {
+        return appDatabase.newsRemoteKeysDao()
     }
 }

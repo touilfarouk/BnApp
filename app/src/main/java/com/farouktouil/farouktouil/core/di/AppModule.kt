@@ -1,7 +1,12 @@
 package com.farouktouil.farouktouil.core.di
 
 import com.farouktouil.farouktouil.consultation_feature.data.remote.ConsultationApiService
+import com.farouktouil.farouktouil.core.di.ConsultationApi
+import com.farouktouil.farouktouil.core.di.DelivererApi
+import com.farouktouil.farouktouil.core.di.NewsApi
+import com.farouktouil.farouktouil.core.di.PersonnelApi
 import com.farouktouil.farouktouil.deliverer_feature.data.remote.DelivererApiService
+import com.farouktouil.farouktouil.news_feature.data.remote.NewsApiService
 import com.farouktouil.farouktouil.personnel_feature.data.remote.PersonnelApiService
 import dagger.Module
 import dagger.Provides
@@ -91,6 +96,30 @@ object AppModule {
 
     @Provides
     @Singleton
+    @NewsApi
+    fun provideNewsOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                }
+            )
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @NewsApi
+    fun provideNewsRetrofit(@NewsApi okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://bneder.dz/api/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
     fun provideDelivererApiService(@DelivererApi retrofit: Retrofit): DelivererApiService {
         return retrofit.create(DelivererApiService::class.java)
     }
@@ -105,5 +134,11 @@ object AppModule {
     @Singleton
     fun provideConsultationApiService(@ConsultationApi consultationRetrofit: Retrofit): ConsultationApiService {
         return consultationRetrofit.create(ConsultationApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsApiService(@NewsApi newsRetrofit: Retrofit): NewsApiService {
+        return newsRetrofit.create(NewsApiService::class.java)
     }
 }

@@ -17,6 +17,7 @@
     <string name="nav_contact">Contact</string>
     <string name="nav_personnel">Personnel BNEDER</string>
     <string name="nav_appel_consultation">Appel à consultation</string>
+    <string name="nav_news">Actualités BNEDER</string>
     <string name="nav_barcode_generator">Générateur de codes-barres</string>
     <string name="app_version">BnederApp v1.0</string>
 
@@ -45,6 +46,11 @@
     <string name="grant_permission">Accorder la permission</string>
     <string name="open_settings">Ouvrir les paramètres</string>
     <string name="search_hint">Rechercher par nom de Matériels et équipements ou code-barres</string>
+
+    <!-- News feature -->
+    <string name="news_screen_title">Actualités BNEDER</string>
+    <string name="news_search_placeholder">Rechercher une actualité</string>
+    <string name="news_list_empty">Aucune actualité disponible hors-ligne.</string>
 
     <!-- Scanner de codes-barres -->
     <string name="scan_barcode">Scanner le code-barres</string>

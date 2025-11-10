@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import com.farouktouil.farouktouil.barcode_feature.presentation.BarcodeGeneratorScreen
 import com.farouktouil.farouktouil.consultation_feature.presentation.ConsultationScreen
 import com.farouktouil.farouktouil.deliverer_feature.presentation.DelivererScreen
+import com.farouktouil.farouktouil.news_feature.presentation.NewsScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseDelivererScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseProductsScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderScreen
@@ -92,6 +93,13 @@ fun Navigation() {
                 )
             }
 
+            composable(ScreenRoutes.NewsScreen.route) {
+                NewsScreen(
+                    drawerState = drawerState,
+                    scope = scope
+                )
+            }
+
             composable(ScreenRoutes.BarcodeGeneratorScreen.route) {
                 BarcodeGeneratorScreen(drawerState = drawerState, scope = scope)
             }
@@ -157,6 +165,7 @@ sealed class ScreenRoutes(val route:String){
     object ContactScreen:ScreenRoutes("contact_screen")
     object PersonnelScreen:ScreenRoutes("personnel_screen")
     object AppelConsultationScreen:ScreenRoutes("appel_consultation_screen")
+    object NewsScreen:ScreenRoutes("news_screen")
     object BarcodeGeneratorScreen:ScreenRoutes("barcode_generator_screen")
     object BarcodeScannerScreen:ScreenRoutes("barcode_scanner_screen")
     object ScanProductScreen:ScreenRoutes("scan_product_screen")

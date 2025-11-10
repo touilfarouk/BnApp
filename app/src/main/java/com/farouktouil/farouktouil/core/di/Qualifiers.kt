@@ -13,3 +13,7 @@ annotation class PersonnelApi
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class ConsultationApi
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class NewsApi
