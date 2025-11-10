@@ -17,9 +17,9 @@ import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +57,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import android.widget.Toast
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -320,6 +322,7 @@ fun ProductScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductForm(
     name: MutableState<String>,
@@ -423,34 +426,56 @@ fun ProductForm(
         // )
         Spacer(modifier = Modifier.height(8.dp))
 
+        val structures = remember(deliverers) { deliverers }
         var expanded by remember { mutableStateOf(false) }
-        val selectedDelivererName = if (selectedDeliverer.value > 0) {
-            deliverers.find { it.delivererId == selectedDeliverer.value }?.name
-                ?: "Choisir une structure"
-        } else {
-           "Choisir une structure"
-        }
+        val selectedDelivererName = structures
+            .firstOrNull { it.delivererId == selectedDeliverer.value }
+            ?.name ?: "Choisir une structure"
 
-        Box {
-            Button(
-                onClick = { expanded = true },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedDeliverer.value > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                )
-            ) {
-                Text("Structure: $selectedDelivererName")
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { shouldExpand ->
+                expanded = shouldExpand && structures.isNotEmpty()
             }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                deliverers.forEach { deliverer ->
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = selectedDelivererName,
+                onValueChange = {},
+                label = { Text("Structure") },
+                readOnly = true,
+                enabled = structures.isNotEmpty(),
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                colors = ExposedDropdownMenuDefaults.textFieldColors()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                structures.forEach { structure ->
                     DropdownMenuItem(
-                        text = { Text("${deliverer.name} (ID: ${deliverer.delivererId})") },
+                        text = { Text(structure.name) },
                         onClick = {
-                            selectedDeliverer.value = deliverer.delivererId
+                            selectedDeliverer.value = structure.delivererId
                             expanded = false
                         }
                     )
                 }
             }
+        }
+
+        if (structures.isEmpty()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Aucune structure disponible. Ajoutez-en depuis l'écran Structures.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))

@@ -23,19 +23,19 @@ interface DelivererDao {
     @Delete
     suspend fun deleteDeliverer(deliverer: DelivererEntity)
 
-    @Query("SELECT * FROM DelivererEntity")
+    @Query("SELECT * FROM structures")
     fun getAllDeliverers(): Flow<List<DelivererEntity>>
 
 
 
-    @Query("SELECT delivererId FROM DelivererEntity") // Fetch deliverer IDs
+    @Query("SELECT delivererId FROM structures") // Fetch deliverer IDs
     fun getAllDelivererIds(): Flow<List<Int>>
 
     @Transaction
-    @Query("SELECT * FROM DelivererEntity")
+    @Query("SELECT * FROM structures")
     fun getDeliverers(): Flow<List<DelivererWithProductsDataObject>>
 
 
-    @Query("SELECT name FROM DELIVERERENTITY WHERE delivererId = :delivererId")
+    @Query("SELECT name FROM structures WHERE delivererId = :delivererId")
     suspend fun getDelivererNameById(delivererId:Int):String
 }
