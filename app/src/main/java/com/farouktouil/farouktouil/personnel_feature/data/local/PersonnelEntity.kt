@@ -6,11 +6,21 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "personnel")
 data class PersonnelEntity(
     @PrimaryKey
-    val id: String,
+    val id: Int,
+    val username: String?,
+    val password: String?,
+    val name: String?,
     val nom: String?,
     val prenom: String?,
-    val structure: String?,
-    val username: String?,
     val fonction: String?,
-    val active: Int?
+    val structure: String?,
+    val maildir: String?,
+    val quota: String?,
+    val localPart: String?,
+    val domain: String?,
+    val matricule: Int?,
+    val active: Int?,
+    val mdpChanged: Int?,
+    val dateRegister: String?,
+    val modified: String?
 )

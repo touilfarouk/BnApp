@@ -40,7 +40,7 @@ import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteK
         ConsultationRemoteKey::class,
         DocumentEntity::class
     ],
-    version = 42, // Incremented version due to schema updates for document caching
+    version = 43, // Incremented version due to personnel pagination schema updates
     exportSchema = true
 )
 @TypeConverters(Converters::class)

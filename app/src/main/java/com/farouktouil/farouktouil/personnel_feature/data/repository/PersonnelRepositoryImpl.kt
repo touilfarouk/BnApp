@@ -23,7 +23,15 @@ class PersonnelRepositoryImpl @Inject constructor(
 ) : PersonnelRepository {
 
     override fun getPersonnel(searchQuery: PersonnelSearchQuery): Flow<PagingData<Personnel>> {
-        val pagingSourceFactory = { appDatabase.personnelDao().getPersonnel("%${searchQuery.name ?: ""}%") }
+        val nameQuery = searchQuery.name?.trim()?.takeIf { it.isNotEmpty() }?.let { "%$it%" }
+        val structureQuery = searchQuery.structure?.trim()?.takeIf { it.isNotEmpty() }?.let { "%$it%" }
+        val pagingSourceFactory = {
+            appDatabase.personnelDao().getPersonnel(
+                nameQuery = nameQuery,
+                structureQuery = structureQuery,
+                activeStatus = searchQuery.active
+            )
+        }
 
         return Pager(
             config = PagingConfig(

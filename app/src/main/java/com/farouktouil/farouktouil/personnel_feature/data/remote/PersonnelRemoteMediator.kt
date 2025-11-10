@@ -25,43 +25,54 @@ class PersonnelRemoteMediator(
 
     override suspend fun load(loadType: LoadType, state: PagingState<Int, PersonnelEntity>): MediatorResult {
         return try {
+            val queryKey = getQueryString()
+
             val page = when (loadType) {
                 LoadType.REFRESH -> 1
-                LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
-                LoadType.APPEND -> {
-                    val remoteKey = appDatabase.withTransaction {
-                        // The id and query are combined to create a unique primary key
-                        remoteKeyDao.getRemoteKeys(id = "personnel", query = getQueryString())
-                    }
-                    if (remoteKey?.nextKey == null) {
+                LoadType.PREPEND -> {
+                    val remoteKey = remoteKeyDao.getRemoteKeys(id = REMOTE_KEY_ID, query = queryKey)
+                    val prevKey = remoteKey?.prevKey
+                    if (prevKey == null) {
                         return MediatorResult.Success(endOfPaginationReached = true)
                     }
-                    remoteKey.nextKey
+                    prevKey
+                }
+                LoadType.APPEND -> {
+                    val remoteKey = remoteKeyDao.getRemoteKeys(id = REMOTE_KEY_ID, query = queryKey)
+                    val nextKey = remoteKey?.nextKey
+                    if (nextKey == null) {
+                        return MediatorResult.Success(endOfPaginationReached = true)
+                    }
+                    nextKey
                 }
             }
 
             val response = personnelApiService.getPersonnel(
                 page = page,
-                name = searchQuery.name,
-                structure = searchQuery.structure,
-                active = searchQuery.active
+                pageSize = state.config.pageSize,
+                search = buildSearchParam()
             )
 
-            val endOfPaginationReached = response.isEmpty()
+            val data = response.data
+            val pagination = response.pagination
+            val endOfPaginationReached = data.isEmpty() || !pagination.hasNext
 
             appDatabase.withTransaction {
                 if (loadType == LoadType.REFRESH) {
                     personnelDao.clearAll()
-                    remoteKeyDao.clearRemoteKeys(getQueryString())
+                    remoteKeyDao.clearRemoteKeys(queryKey)
                 }
-                val prevKey = if (page == 1) null else page - 1
-                val nextKey = if (endOfPaginationReached) null else page + 1
-                val keys = response.map {
-                    // Using a constant id because we only have one query
-                    RemoteKey(id = "personnel", prevKey = prevKey, nextKey = nextKey, query = getQueryString())
-                }
-                remoteKeyDao.insertAll(keys)
-                personnelDao.insertAll(response.toEntities())
+
+                val prevKey = if (page <= 1) null else page - 1
+                val nextKey = if (pagination.hasNext) page + 1 else null
+                val remoteKey = RemoteKey(
+                    id = REMOTE_KEY_ID,
+                    prevKey = prevKey,
+                    nextKey = nextKey,
+                    query = queryKey
+                )
+                remoteKeyDao.insertAll(listOf(remoteKey))
+                personnelDao.insertAll(data.toEntities())
             }
 
             MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
@@ -72,7 +83,23 @@ class PersonnelRemoteMediator(
         }
     }
 
+    private fun buildSearchParam(): String? {
+        val parts = listOfNotNull(
+            searchQuery.name?.trim()?.takeIf { it.isNotEmpty() },
+            searchQuery.structure?.trim()?.takeIf { it.isNotEmpty() }
+        )
+
+        return parts.joinToString(" ").takeIf { it.isNotBlank() }
+    }
+
     private fun getQueryString(): String {
-        return "${searchQuery.name}_${searchQuery.structure}_${searchQuery.active}"
+        val nameKey = searchQuery.name?.trim().orEmpty()
+        val structureKey = searchQuery.structure?.trim().orEmpty()
+        val activeKey = searchQuery.active?.toString().orEmpty()
+        return listOf(nameKey, structureKey, activeKey).joinToString(separator = "|")
+    }
+
+    companion object {
+        private const val REMOTE_KEY_ID = "personnel"
     }
 }
