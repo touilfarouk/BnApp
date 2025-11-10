@@ -18,6 +18,30 @@ import com.farouktouil.farouktouil.personnel_feature.domain.model.Personnel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+private val DEFAULT_STRUCTURES = listOf(
+    "B.L Centre (Blida)",
+    "B.L Est (Constantine)",
+    "B.L Ouest (Oran)",
+    "B.L Région Hauts Plateaux (Sétif)",
+    "B.L Steppes (Djelfa)",
+    "B.L Sud (Ouargla)",
+    "Départ. Doc.et Banq.de Données",
+    "Départ. S.I.G",
+    "Départ.Finances.et Comptabilité",
+    "Départ.Génie Logiciel",
+    "Départ.Laboratoire",
+    "Départ.Patrimoine.et Moy.Généraux",
+    "Départ.Ress Humain.et Aff.Sociales",
+    "Direction des Contrats et du Soutien",
+    "Direction des Etudes Form.et Progr",
+    "Direction Générale",
+    "Direction.Admin.et des Finances",
+    "S/Direc E.A.D.A",
+    "S/Direc E.A.D.Rural",
+    "S/Direc.Progr.et Moy.Téchnique",
+    "S/Direction de la Formation"
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonnelScreen(
@@ -105,9 +129,12 @@ fun PersonnelScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchAndFilterCard(state: PersonnelScreenState, onEvent: (PersonnelEvent) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    var structureMenuExpanded by remember { mutableStateOf(false) }
+    val structureOptions = remember { DEFAULT_STRUCTURES }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -136,12 +163,46 @@ fun SearchAndFilterCard(state: PersonnelScreenState, onEvent: (PersonnelEvent) -
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = state.structureQuery,
-                    onValueChange = { onEvent(PersonnelEvent.OnStructureQueryChange(it)) },
-                    label = { Text("Search by structure") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                ExposedDropdownMenuBox(
+                    expanded = structureMenuExpanded,
+                    onExpandedChange = { structureMenuExpanded = !structureMenuExpanded }
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        value = state.structureQuery.takeIf { it.isNotBlank() } ?: "",
+                        onValueChange = {},
+                        label = { Text("Structure") },
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = structureMenuExpanded)
+                        },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = structureMenuExpanded,
+                        onDismissRequest = { structureMenuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Toutes les structures") },
+                            onClick = {
+                                structureMenuExpanded = false
+                                onEvent(PersonnelEvent.OnStructureQueryChange(""))
+                            }
+                        )
+                        structureOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    structureMenuExpanded = false
+                                    onEvent(PersonnelEvent.OnStructureQueryChange(option))
+                                }
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Status", style = MaterialTheme.typography.titleSmall)
                 Row(
