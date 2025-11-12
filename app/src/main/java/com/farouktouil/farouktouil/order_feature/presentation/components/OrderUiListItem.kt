@@ -45,7 +45,7 @@ fun OrderUiListItem(
         ) {
             Column {
                 Text(
-                    orderListItem.delivererName,
+                    orderListItem.structureName,
                     fontWeight = FontWeight.Bold,
                     color = primaryLight,
                     fontSize = 20.sp

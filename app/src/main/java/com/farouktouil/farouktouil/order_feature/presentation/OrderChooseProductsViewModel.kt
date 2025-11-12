@@ -54,20 +54,20 @@ class OrderChooseProductsViewModel @Inject constructor(
     private val _selectedProducts = MutableStateFlow<List<ProductListItem>>(emptyList())
     val selectedProducts: StateFlow<List<ProductListItem>> = _selectedProducts
 
-    // Current deliverer ID
-    private var delivererId: Int = -1
+    // Current structure name
+    private var structureName: String = ""
 
-    // Initialize the product list for a specific deliverer
-    fun initProductList(delivererId: Int) {
+    // Initialize the product list for a specific structure
+    fun initProductList(structureName: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            orderRepository.getProductsForDeliverer(delivererId)
+            orderRepository.getProductsForStructure(structureName)
                 .catch { e ->
                     _errorMessage.value = "Error fetching products: ${e.message}"
                 }
                 .collect { productList ->
                     _products.value = productList
-                    this@OrderChooseProductsViewModel.delivererId = delivererId
+                    this@OrderChooseProductsViewModel.structureName = structureName
                     setupProductsToShow()
                     _isLoading.value = false
                 }
@@ -189,7 +189,7 @@ class OrderChooseProductsViewModel @Inject constructor(
         viewModelScope.launch {
             confirmOrderUseCase(
                 _selectedProducts.value.map { it.toBoughtProduct() },
-                delivererId = delivererId
+                structureName = structureName
             )
         }
     }

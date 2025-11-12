@@ -27,10 +27,10 @@ class ExportViewModel @Inject constructor(
     var fileExportState by mutableStateOf(FileExportState())
         private set
 
-    var selectedDelivererName by mutableStateOf<String?>(null)
+    var selectedStructureName by mutableStateOf<String?>(null)
         private set
 
-    var availableDeliverers by mutableStateOf<List<String>>(emptyList())
+    var availableStructures by mutableStateOf<List<String>>(emptyList())
         private set
 
     fun generateExportFile() {
@@ -42,10 +42,10 @@ class ExportViewModel @Inject constructor(
                 return@launch
             }
 
-            // Filter orders by selected deliverer if one is selected
-            val filteredOrders = if (selectedDelivererName != null) {
+            // Filter orders by selected structure if one is selected
+            val filteredOrders = if (selectedStructureName != null) {
                 orders.filter { order ->
-                    order.delivererName == selectedDelivererName
+                    order.structureName == selectedStructureName
                 }
             } else {
                 orders
@@ -56,8 +56,8 @@ class ExportViewModel @Inject constructor(
                 return@launch
             }
 
-            // Count total products for collectedDataAmount (filtered by selected deliverer)
-            collectedDataAmount = if (selectedDelivererName != null) {
+            // Count total products for collectedDataAmount (filtered by selected structure)
+            collectedDataAmount = if (selectedStructureName != null) {
                 filteredOrders.sumOf { it.products.size }
             } else {
                 filteredOrders.sumOf { it.products.size }
@@ -96,17 +96,18 @@ class ExportViewModel @Inject constructor(
         }
     }
 
-    fun setSelectedDeliverer(delivererName: String?) {
-        selectedDelivererName = delivererName
+    fun setSelectedStructure(structureName: String?) {
+        selectedStructureName = structureName
     }
 
-    fun loadAvailableDeliverers() {
+    fun loadAvailableStructures() {
         viewModelScope.launch {
             val orders = orderRepository.getOrders()
-            val deliverers = orders.map { it.delivererName }
+            val structures = orders.mapNotNull { it.structureName }
+                .filter { it.isNotBlank() }
                 .distinct()
                 .sorted()
-            availableDeliverers = deliverers
+            availableStructures = structures
         }
     }
 

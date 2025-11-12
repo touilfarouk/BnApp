@@ -1,5 +1,6 @@
 package com.farouktouil.farouktouil.core.data.local.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -7,6 +8,8 @@ import androidx.room.PrimaryKey
 data class OrderEntity(
     @PrimaryKey val orderId: String,
     val date:String,
-    val delivererTime:String,
-    val delivererName:String
+    @ColumnInfo(name = "delivererTime")
+    val deliveryTime:String,
+    @ColumnInfo(name = "delivererName")
+    val structureName:String
 )

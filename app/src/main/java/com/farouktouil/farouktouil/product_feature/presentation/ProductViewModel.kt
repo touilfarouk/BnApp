@@ -2,16 +2,16 @@ package com.farouktouil.farouktouil.product_feature.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.farouktouil.farouktouil.core.data.local.DelivererDao
 import com.farouktouil.farouktouil.core.data.local.ProductDao
-import com.farouktouil.farouktouil.core.data.local.entities.DelivererEntity
 import com.farouktouil.farouktouil.core.data.local.entities.ProductEntity
 import com.farouktouil.farouktouil.core.domain.model.Product
 import com.farouktouil.farouktouil.product_feature.domain.useCase.DeleteProductUseCase
 import com.farouktouil.farouktouil.product_feature.domain.useCase.GetAllProductsUseCase
-import com.farouktouil.farouktouil.product_feature.domain.useCase.GetProductsForDelivererUseCase
+import com.farouktouil.farouktouil.product_feature.domain.useCase.GetProductsForStructureUseCase
 import com.farouktouil.farouktouil.product_feature.domain.useCase.InsertProductUseCase
 import com.farouktouil.farouktouil.product_feature.domain.useCase.UpdateProductUseCase
+import com.farouktouil.farouktouil.product_feature.presentation.state.PersonnelListItem
+import com.farouktouil.farouktouil.personnel_feature.domain.use_case.GetPersonnelDirectoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,16 +30,25 @@ class ProductViewModel @Inject constructor(
     private val deleteProductUseCase: DeleteProductUseCase,
     private val updateProductUseCase: UpdateProductUseCase,
     private val getAllProductsUseCase: GetAllProductsUseCase,
-    private val getProductsForDelivererUseCase: GetProductsForDelivererUseCase, // UseCase to fetch products for a specific deliverer
-    private val delivererDao: DelivererDao,
-    private val productDao: ProductDao
+    private val getProductsForStructureUseCase: GetProductsForStructureUseCase,
+    private val productDao: ProductDao,
+    private val getPersonnelDirectoryUseCase: GetPersonnelDirectoryUseCase
 ) : ViewModel() {
 
-    private val _deliverers = MutableStateFlow<List<DelivererEntity>>(emptyList())
-    val deliverers: StateFlow<List<DelivererEntity>> = _deliverers.asStateFlow()
+    private val _structures = MutableStateFlow<List<String>>(emptyList())
+    val structures: StateFlow<List<String>> = _structures.asStateFlow()
 
-    private val _selectedDelivererId = MutableStateFlow<Int?>(null)
-    val selectedDelivererId: StateFlow<Int?> = _selectedDelivererId.asStateFlow()
+    private val _selectedStructure = MutableStateFlow<String?>(null)
+    val selectedStructure: StateFlow<String?> = _selectedStructure.asStateFlow()
+
+    private val _personnel = MutableStateFlow<List<PersonnelListItem>>(emptyList())
+    val personnel: StateFlow<List<PersonnelListItem>> = _personnel.asStateFlow()
+
+    private val _isPersonnelLoading = MutableStateFlow(false)
+    val isPersonnelLoading: StateFlow<Boolean> = _isPersonnelLoading.asStateFlow()
+
+    private val _personnelError = MutableStateFlow<String?>(null)
+    val personnelError: StateFlow<String?> = _personnelError.asStateFlow()
 
     private val _lowStockProducts = MutableStateFlow<List<Product>>(emptyList())
     val lowStockProducts: StateFlow<List<Product>> = _lowStockProducts.asStateFlow()
@@ -53,11 +63,11 @@ class ProductViewModel @Inject constructor(
     val lowStockCount: StateFlow<Int> = _lowStockCount.asStateFlow()
 
     val uiState: StateFlow<ProductUiState> = combine(
-        _selectedDelivererId.flatMapLatest { delivererId ->
-            if (delivererId == null) {
+        _selectedStructure.flatMapLatest { structureName ->
+            if (structureName.isNullOrBlank()) {
                 getAllProductsUseCase.invoke()
             } else {
-                getProductsForDelivererUseCase.invoke(delivererId)
+                getProductsForStructureUseCase.invoke(structureName)
             }
         },
         lowStockProducts,
@@ -75,16 +85,45 @@ class ProductViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, ProductUiState())
 
     init {
-        fetchDeliverers()
+        refreshPersonnelDirectory()
         observeInventoryStats()
     }
 
-    private fun fetchDeliverers() {
+    fun refreshPersonnelDirectory() {
         viewModelScope.launch {
-            delivererDao.getAllDeliverers()
-                .collect { deliverers ->
-                    _deliverers.value = deliverers
+            _isPersonnelLoading.value = true
+            _personnelError.value = null
+
+            runCatching { getPersonnelDirectoryUseCase() }
+                .onSuccess { directory ->
+                    val personnelItems = directory.map { personnel ->
+                        PersonnelListItem(
+                            id = personnel.id,
+                            fullName = personnel.bestGuessName,
+                            structureName = personnel.displayStructure
+                        )
+                    }.sortedBy { it.fullName.lowercase() }
+
+                    _personnel.value = personnelItems
+
+                    val structures = directory.mapNotNull { it.displayStructure }
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                        .distinctBy { it.lowercase() }
+                        .sortedBy { it.lowercase() }
+
+                    _structures.value = structures
+
+                    val currentSelection = _selectedStructure.value
+                    if (currentSelection != null && currentSelection !in structures) {
+                        _selectedStructure.value = null
+                    }
                 }
+                .onFailure { throwable ->
+                    _personnelError.value = throwable.message
+                }
+
+            _isPersonnelLoading.value = false
         }
     }
 
@@ -92,8 +131,8 @@ class ProductViewModel @Inject constructor(
         productDao.adjustProductQuantity(productId, quantityChange)
     }
 
-    fun selectDeliverer(delivererId: Int?) {
-        _selectedDelivererId.value = delivererId
+    fun selectStructure(structureName: String?) {
+        _selectedStructure.value = structureName
     }
 
     fun update(product: Product) = viewModelScope.launch {
@@ -137,7 +176,9 @@ class ProductViewModel @Inject constructor(
         quantity: Int = 0,
         minQuantity: Int = 0,
         maxQuantity: Int = 100,
-        belongsToDeliverer: Int,
+        structureName: String?,
+        assignedPersonnelId: Int?,
+        assignedPersonnelName: String?,
         barcode: String = ""
     ) = viewModelScope.launch {
         val product = Product(
@@ -147,7 +188,9 @@ class ProductViewModel @Inject constructor(
             quantity = quantity,
             minQuantity = minQuantity,
             maxQuantity = maxQuantity,
-            belongsToDeliverer = belongsToDeliverer,
+            structureName = structureName,
+            assignedPersonnelId = assignedPersonnelId,
+            assignedPersonnelName = assignedPersonnelName,
             barcode = barcode
         )
         insertProductUseCase.invoke(product)
@@ -182,7 +225,9 @@ class ProductViewModel @Inject constructor(
             quantity = this.quantity,
             minQuantity = this.minQuantity,
             maxQuantity = this.maxQuantity,
-            belongsToDeliverer = this.belongsToDeliverer,
+            structureName = this.structureName,
+            assignedPersonnelId = this.assignedPersonnelId,
+            assignedPersonnelName = this.assignedPersonnelName,
             barcode = this.barcode
         )
     }

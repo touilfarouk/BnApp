@@ -402,22 +402,24 @@ fun ProductDetailsContent(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Informations sur le Structures",
+                    text = "Structure associée",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                val structureLabel = product.structureName?.takeIf { it.isNotBlank() } ?: "Non assignée"
                 Text(
-                    text = "ID du Structures : ${product.belongsToDeliverer}",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = structureLabel,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Remarque : les détails complets du Structures seront affichés ici",
+                    text = "Les informations détaillées de la structure seront affichées ici",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )

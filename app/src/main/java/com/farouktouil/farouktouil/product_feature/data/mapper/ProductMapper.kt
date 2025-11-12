@@ -5,27 +5,31 @@ import com.farouktouil.farouktouil.core.domain.model.Product
 
 fun Product.toProductEntity(): ProductEntity {
     return ProductEntity(
-        productId = productId ?: 0, // Use 0 if null
+        productId = productId,
         name = name,
         label = label,
         pricePerAmount = pricePerAmount,
         quantity = quantity,
         minQuantity = minQuantity,
         maxQuantity = maxQuantity,
-        belongsToDeliverer = belongsToDeliverer // Already Int in Product model
+        structureName = structureName,
+        assignedPersonnelId = assignedPersonnelId,
+        assignedPersonnelName = assignedPersonnelName
     )
 }
 
 fun ProductEntity.toProduct(): Product {
     return Product(
-        productId = productId, // Non-nullable in ProductEntity
+        productId = productId,
         name = name,
         label = label,
         pricePerAmount = pricePerAmount,
         quantity = quantity,
         minQuantity = minQuantity,
         maxQuantity = maxQuantity,
-        belongsToDeliverer = belongsToDeliverer // Already Int in ProductEntity
+        structureName = structureName,
+        assignedPersonnelId = assignedPersonnelId,
+        assignedPersonnelName = assignedPersonnelName
     )
 }
 

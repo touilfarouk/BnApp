@@ -101,25 +101,6 @@ fun DrawerSheet(navController: NavController, drawerState: DrawerState, scope: C
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
-                // Deliverers
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.nav_deliverers), style = MaterialTheme.typography.titleMedium) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate(ScreenRoutes.DelivererScreen.route) {
-                            popUpTo(ScreenRoutes.DelivererScreen.route) { inclusive = true }
-                        }
-                    },
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-
-                Divider(
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    thickness = 1.dp,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-
                 // Products
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.nav_products), style = MaterialTheme.typography.titleMedium) },

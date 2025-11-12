@@ -34,11 +34,12 @@ import com.farouktouil.farouktouil.ui.theme.primaryContainerLight
 @Composable
 fun OrderChooseProductsScreen(
     navController: NavController,
-    delivererId: Int?,
+    structureName: String?,
     viewModel: OrderChooseProductsViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(key1 = delivererId) {
-        delivererId?.let { viewModel.initProductList(it) } ?: Log.e("OrderChooseProductsScreen", "Deliverer ID is null")
+    LaunchedEffect(key1 = structureName) {
+        structureName?.takeIf { it.isNotBlank() }?.let { viewModel.initProductList(it) }
+            ?: Log.e("OrderChooseProductsScreen", "Structure name is null or blank")
     }
 
     val productsToShow by viewModel.productsToShow.collectAsStateWithLifecycle()
@@ -52,7 +53,7 @@ fun OrderChooseProductsScreen(
                 title = { Text("Section des produits") },
                 actions = {
                     IconButton(onClick = { navController.navigate(
-                        ScreenRoutes.ProductScreen.route + "/${delivererId}"
+                        ScreenRoutes.ProductScreen.route + "/${structureName ?: ""}"
                     ) }) {
                         Icon(Icons.Default.Add, contentDescription = "Ajouter un produit")
                     }

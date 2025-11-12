@@ -8,4 +8,6 @@ import kotlinx.coroutines.flow.Flow
 interface PersonnelRepository {
 
     fun getPersonnel(searchQuery: PersonnelSearchQuery): Flow<PagingData<Personnel>>
+
+    suspend fun getPersonnelDirectory(): List<Personnel>
 }

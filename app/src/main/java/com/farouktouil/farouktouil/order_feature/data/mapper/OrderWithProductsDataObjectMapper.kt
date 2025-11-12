@@ -8,8 +8,8 @@ fun OrderWithProductsDataObject.toOrder(): Order {
     return Order(
         orderId = orderEntity.orderId.toString(),
         date = orderEntity.date,
-        delivererName = orderEntity.delivererName,
-        delivererTime = orderEntity.delivererTime,
+        structureName = orderEntity.structureName,
+        deliveryTime = orderEntity.deliveryTime,
         products = products.zip(orderProductEntities) { product, orderProduct ->
             BoughtProduct(
                 productId = product.productId,

@@ -9,5 +9,5 @@ interface ProductsRepository {
     suspend fun update(product: Product)
     suspend fun delete(product: Product)
     fun getAllProducts(): Flow<List<Product>>
-    fun getProductsForDeliverer(delivererId: Int): Flow<List<Product>> // ✅ Ensure correct return type
+    fun getProductsForStructure(structureName: String): Flow<List<Product>>
 }

@@ -1,7 +1,14 @@
 package com.farouktouil.farouktouil.product_feature.presentation
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.stringResource
@@ -43,9 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.farouktouil.farouktouil.core.data.local.entities.DelivererEntity
-import com.farouktouil.farouktouil.deliverer_feature.presentation.DelivererViewModel
-
 import com.farouktouil.farouktouil.core.domain.model.Product
 import com.farouktouil.farouktouil.core.presentation.ScreenRoutes
 import com.farouktouil.farouktouil.ui.theme.errorLight
@@ -56,6 +61,8 @@ import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,9 +70,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import com.farouktouil.farouktouil.product_feature.presentation.state.PersonnelListItem
+import androidx.compose.material3.TextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,12 +83,11 @@ fun ProductScreen(
     navController: NavController,
     drawerState: DrawerState,
     scope: CoroutineScope,
-    delivererId: Int?, // Add delivererId as a parameter
+    structureNameArg: String?,
     productViewModel: ProductViewModel = hiltViewModel()
 ) {
-    // Set the selected deliverer in the ViewModel
-    LaunchedEffect(delivererId) {
-        productViewModel.selectDeliverer(delivererId)
+    LaunchedEffect(structureNameArg) {
+        productViewModel.selectStructure(structureNameArg)
     }
 
     val uiState by productViewModel.uiState.collectAsStateWithLifecycle()
@@ -90,10 +99,26 @@ fun ProductScreen(
     val quantity = remember { mutableStateOf("") }
     val minQuantity = remember { mutableStateOf("") }
     val maxQuantity = remember { mutableStateOf("") }
-    val selectedDeliverer = remember { mutableStateOf(0) }
-    val deliverers: List<DelivererEntity> by productViewModel.deliverers.collectAsStateWithLifecycle()
-    val selectedDelivererId by productViewModel.selectedDelivererId.collectAsStateWithLifecycle()
+    val selectedStructure = remember { mutableStateOf<String?>(null) }
+    val structures: List<String> by productViewModel.structures.collectAsStateWithLifecycle()
+    val selectedStructureName by productViewModel.selectedStructure.collectAsStateWithLifecycle()
+    val personnel: List<PersonnelListItem> by productViewModel.personnel.collectAsStateWithLifecycle()
+    val isPersonnelLoading by productViewModel.isPersonnelLoading.collectAsStateWithLifecycle()
+    val personnelError by productViewModel.personnelError.collectAsStateWithLifecycle()
+    val selectedPersonnel = remember { mutableStateOf<PersonnelListItem?>(null) }
     var showFilterMenu by remember { mutableStateOf(false) }
+
+    val resolvePersonnel: (Product) -> PersonnelListItem? = { product ->
+        personnel.firstOrNull { item ->
+            product.assignedPersonnelId != null && item.id == product.assignedPersonnelId
+        } ?: product.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { name ->
+            PersonnelListItem(
+                id = product.assignedPersonnelId,
+                fullName = name,
+                structureName = product.structureName
+            )
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -102,9 +127,8 @@ fun ProductScreen(
                 title = {
                       Column {
                         Text(stringResource(id = R.string.products))
-                        selectedDelivererId?.let { id ->
-                            val delivererName = deliverers.find { it.delivererId == id }?.name ?: ""
-                            Text(stringResource(id = R.string.filtered_by, delivererName), style = MaterialTheme.typography.bodySmall)
+                        selectedStructureName?.takeIf { it.isNotBlank() }?.let { name ->
+                            Text(stringResource(id = R.string.filtered_by, name), style = MaterialTheme.typography.bodySmall)
                         }
                         // Inventory Statistics
                         Row(
@@ -149,7 +173,7 @@ fun ProductScreen(
                         IconButton(onClick = { showFilterMenu = true }) {
                             Icon(
                                 imageVector = Icons.Default.FilterList,
-                                contentDescription = "Filter avec Matériels et équipements"
+                                contentDescription = "Filter structures"
                             )
                         }
                         DropdownMenu(
@@ -158,22 +182,21 @@ fun ProductScreen(
                         ) {
                             // Option to show all products
                             DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.all_deliverers)) },
+                                text = { Text(stringResource(id = R.string.all_structures)) },
                                 onClick = {
-                                    productViewModel.selectDeliverer(null)
+                                    productViewModel.selectStructure(null)
                                     showFilterMenu = false
                                 },
-                                enabled = selectedDelivererId != null
+                                enabled = !selectedStructureName.isNullOrBlank()
                             )
-                            // List of deliverers to filter by
-                            deliverers.forEach { deliverer ->
+                            structures.forEach { structure ->
                                 DropdownMenuItem(
-                                    text = { Text(deliverer.name) },
+                                    text = { Text(structure) },
                                     onClick = {
-                                        productViewModel.selectDeliverer(deliverer.delivererId)
+                                        productViewModel.selectStructure(structure)
                                         showFilterMenu = false
                                     },
-                                    enabled = selectedDelivererId != deliverer.delivererId
+                                    enabled = selectedStructureName != structure
                                 )
                             }
                         }
@@ -191,8 +214,8 @@ fun ProductScreen(
                 quantity.value = ""
                 minQuantity.value = ""
                 maxQuantity.value = ""
-                // Don't auto-select deliverer immediately, let user choose
-                selectedDeliverer.value = 0
+                selectedStructure.value = null
+                selectedPersonnel.value = null
             }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Ajouter Matériels et équipements")
             }
@@ -207,13 +230,20 @@ fun ProductScreen(
                     quantity = quantity,
                     minQuantity = minQuantity,
                     maxQuantity = maxQuantity,
-                    selectedDeliverer = selectedDeliverer,
-                    deliverers = deliverers,
+                    selectedStructure = selectedStructure,
+                    selectedPersonnel = selectedPersonnel,
+                    availableStructures = structures,
+                    availablePersonnel = personnel,
+                    isPersonnelLoading = isPersonnelLoading,
+                    personnelError = personnelError,
+                    onRefreshPersonnel = { productViewModel.refreshPersonnelDirectory() },
                     onSave = {
                         val priceValue = price.value.toDoubleOrNull() ?: 0.0
                         val quantityValue = quantity.value.toIntOrNull() ?: 0
                         val minQuantityValue = minQuantity.value.toIntOrNull() ?: 0
                         val maxQuantityValue = maxQuantity.value.toIntOrNull() ?: 100
+
+                        val selectedPersonnelItem = selectedPersonnel.value
 
                         if (editingProduct.value != null) {
                             val updatedProduct = editingProduct.value!!.copy(
@@ -223,7 +253,9 @@ fun ProductScreen(
                                 quantity = quantityValue,
                                 minQuantity = minQuantityValue,
                                 maxQuantity = maxQuantityValue,
-                                belongsToDeliverer = selectedDeliverer.value
+                                structureName = selectedStructure.value,
+                                assignedPersonnelId = selectedPersonnelItem?.id,
+                                assignedPersonnelName = selectedPersonnelItem?.fullName
                             )
                             productViewModel.update(updatedProduct)
                         } else {
@@ -234,7 +266,9 @@ fun ProductScreen(
                                 quantity = quantityValue,
                                 minQuantity = minQuantityValue,
                                 maxQuantity = maxQuantityValue,
-                                belongsToDeliverer = selectedDeliverer.value
+                                structureName = selectedStructure.value,
+                                assignedPersonnelId = selectedPersonnelItem?.id,
+                                assignedPersonnelName = selectedPersonnelItem?.fullName
                             )
                         }
                         isAddingProduct.value = false
@@ -243,7 +277,6 @@ fun ProductScreen(
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(uiState.data) { product ->
-                        val delivererName = deliverers.find { it.delivererId == product.belongsToDeliverer.toInt() }?.name ?: "Unknown"
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -256,7 +289,8 @@ fun ProductScreen(
                                     quantity.value = product.quantity.toString()
                                     minQuantity.value = product.minQuantity.toString()
                                     maxQuantity.value = product.maxQuantity.toString()
-                                    selectedDeliverer.value = product.belongsToDeliverer
+                                    selectedStructure.value = product.structureName
+                                    selectedPersonnel.value = resolvePersonnel(product)
                                     isAddingProduct.value = true
                                 },
                         ) {
@@ -274,7 +308,15 @@ fun ProductScreen(
                                     Text(text = "Price: $${product.pricePerAmount}")
                                     Text(text = "Quantity: ${product.quantity}")
                                     Text(text = "Min: ${product.minQuantity}, Max: ${product.maxQuantity}")
-                                    Text(text = "Deliverer: $delivererName")
+                                    product.structureName?.let { structure ->
+                                        Text(text = stringResource(id = R.string.filtered_by, structure))
+                                    }
+                                    product.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { assignee ->
+                                        Text(
+                                            text = "Affecté à : $assignee",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
 
                                     // Stock status indicator
                                     val stockStatus = when {
@@ -297,7 +339,8 @@ fun ProductScreen(
                                     quantity.value = product.quantity.toString()
                                     minQuantity.value = product.minQuantity.toString()
                                     maxQuantity.value = product.maxQuantity.toString()
-                                    selectedDeliverer.value = product.belongsToDeliverer
+                                    selectedStructure.value = product.structureName
+                                    selectedPersonnel.value = resolvePersonnel(product)
                                     isAddingProduct.value = true
                                 }) {
                                     Icon(
@@ -331,8 +374,13 @@ fun ProductForm(
     quantity: MutableState<String>,
     minQuantity: MutableState<String>,
     maxQuantity: MutableState<String>,
-    selectedDeliverer: MutableState<Int>,
-    deliverers: List<DelivererEntity>,
+    selectedStructure: MutableState<String?>,
+    selectedPersonnel: MutableState<PersonnelListItem?>,
+    availableStructures: List<String>,
+    availablePersonnel: List<PersonnelListItem>,
+    isPersonnelLoading: Boolean,
+    personnelError: String?,
+    onRefreshPersonnel: () -> Unit,
     onSave: () -> Unit
 ) {
     val context = LocalContext.current
@@ -426,11 +474,38 @@ fun ProductForm(
         // )
         Spacer(modifier = Modifier.height(8.dp))
 
-        val structures = remember(deliverers) { deliverers }
+        val structures = remember(availableStructures) { availableStructures }
         var expanded by remember { mutableStateOf(false) }
-        val selectedDelivererName = structures
-            .firstOrNull { it.delivererId == selectedDeliverer.value }
-            ?.name ?: "Choisir une structure"
+        val selectedStructureName = selectedStructure.value ?: "Choisir une structure"
+        val selectedPersonnelValue = selectedPersonnel.value
+        val filteredPersonnel by remember(selectedStructure.value, availablePersonnel, selectedPersonnelValue) {
+            derivedStateOf {
+                val baseList = if (selectedStructure.value.isNullOrBlank()) {
+                    availablePersonnel
+                } else {
+                    availablePersonnel.filter { it.structureName == selectedStructure.value }
+                }
+
+                if (selectedPersonnelValue != null && baseList.none {
+                        it.id == selectedPersonnelValue.id && it.fullName == selectedPersonnelValue.fullName
+                    }
+                ) {
+                    baseList + selectedPersonnelValue
+                } else {
+                    baseList
+                }
+            }
+        }
+        var personnelExpanded by remember { mutableStateOf(false) }
+        val selectedPersonnelName = selectedPersonnelValue?.fullName ?: "Sélectionner un personnel"
+
+        LaunchedEffect(selectedStructure.value) {
+            val structure = selectedStructure.value
+            val current = selectedPersonnel.value
+            if (structure != null && current != null && current.structureName != null && current.structureName != structure) {
+                selectedPersonnel.value = null
+            }
+        }
 
         ExposedDropdownMenuBox(
             expanded = expanded,
@@ -442,7 +517,7 @@ fun ProductForm(
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth(),
-                value = selectedDelivererName,
+                value = selectedStructureName,
                 onValueChange = {},
                 label = { Text("Structure") },
                 readOnly = true,
@@ -457,11 +532,12 @@ fun ProductForm(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                structures.forEach { structure ->
+                structures.forEach { structureName ->
                     DropdownMenuItem(
-                        text = { Text(structure.name) },
+                        text = { Text(structureName) },
                         onClick = {
-                            selectedDeliverer.value = structure.delivererId
+                            selectedStructure.value = structureName
+                            selectedPersonnel.value = null
                             expanded = false
                         }
                     )
@@ -479,6 +555,87 @@ fun ProductForm(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+
+        ExposedDropdownMenuBox(
+            expanded = personnelExpanded,
+            onExpandedChange = { shouldExpand ->
+                personnelExpanded = shouldExpand && filteredPersonnel.isNotEmpty()
+            }
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = selectedPersonnelName,
+                onValueChange = {},
+                label = { Text("Personnel") },
+                readOnly = true,
+                enabled = filteredPersonnel.isNotEmpty(),
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = personnelExpanded)
+                },
+                colors = ExposedDropdownMenuDefaults.textFieldColors()
+            )
+
+            ExposedDropdownMenu(
+                expanded = personnelExpanded,
+                onDismissRequest = { personnelExpanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Aucun personnel") },
+                    onClick = {
+                        selectedPersonnel.value = null
+                        personnelExpanded = false
+                    }
+                )
+                filteredPersonnel.forEach { personnelItem ->
+                    DropdownMenuItem(
+                        text = {
+                            val structureSuffix = personnelItem.structureName?.let { " (${it})" } ?: ""
+                            Text(personnelItem.fullName + structureSuffix)
+                        },
+                        onClick = {
+                            selectedPersonnel.value = personnelItem
+                            personnelExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        if (isPersonnelLoading) {
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+
+        personnelError?.let { errorMessage ->
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = errorMessage,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        if (!isPersonnelLoading && filteredPersonnel.isEmpty()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = if (selectedStructure.value.isNullOrEmpty()) {
+                    "Aucun personnel disponible pour l'instant."
+                } else {
+                    "Aucun personnel trouvé pour cette structure."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+        TextButton(onClick = onRefreshPersonnel) {
+            Text("Actualiser le personnel")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = onSave
         ) {
@@ -486,7 +643,7 @@ fun ProductForm(
         }
 
         // Show message if deliverer not selected
-        if (selectedDeliverer.value == 0 && deliverers.isNotEmpty()) {
+        if (selectedStructure.value.isNullOrEmpty() && structures.isNotEmpty()) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "prière de selectionner une structure",

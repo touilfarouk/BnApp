@@ -4,7 +4,6 @@ import com.farouktouil.farouktouil.core.util.Resource
 import com.farouktouil.farouktouil.export_feature.data.converter.DataConverter
 import com.farouktouil.farouktouil.export_feature.data.converter.GenerateInfo
 import com.farouktouil.farouktouil.export_feature.domain.model.ExportModel
-import com.farouktouil.farouktouil.order_feature.domain.model.BoughtProduct
 import com.farouktouil.farouktouil.order_feature.domain.model.Order
 import com.opencsv.CSVWriter
 import com.opencsv.CSVWriterBuilder
@@ -13,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.StringWriter
 import java.io.Writer
-import kotlin.math.exp
+
 class DataConverterCSV : DataConverter {
 
     private fun getCSVWriter(writer: Writer): ICSVWriter {
@@ -45,8 +44,8 @@ class DataConverterCSV : DataConverter {
             csvWriter.writeNext(
                 arrayOf(
                     exportModel.date,
-                    exportModel.delivererName,
-                    exportModel.delivererTime,
+                    exportModel.structureName,
+                    exportModel.deliveryTime,
                     productsString  // ✅ Now formatted properly
                 )
             )
@@ -70,6 +69,6 @@ class DataConverterCSV : DataConverter {
 
     companion object {
         const val SEPARATOR = ';'
-        val HEADER_DATA = arrayOf("Date", "Deliverer Name", "Deliverer Time", "Products (Name:Label:Amount:Price)")
+        val HEADER_DATA = arrayOf("Date", "Structure Name", "Delivery Time", "Products (Name:Label:Amount:Price)")
     }
 }

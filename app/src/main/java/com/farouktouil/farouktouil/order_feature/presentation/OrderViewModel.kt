@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
-import com.farouktouil.farouktouil.deliverer_feature.domain.repository.DelivererRepository
 import com.farouktouil.farouktouil.order_feature.domain.model.Order
 import com.farouktouil.farouktouil.order_feature.domain.repository.OrderRepository
 import com.farouktouil.farouktouil.order_feature.presentation.mapper.toOrderDetailListItem
@@ -25,7 +24,6 @@ import javax.inject.Inject
 @HiltViewModel
 class OrderViewModel @Inject constructor(
     private val orderRepository: OrderRepository
-   //private val delivererRepository: DelivererRepository
 ) : ViewModel() {
 
     private var orders: List<Order> = emptyList()
@@ -47,10 +45,10 @@ class OrderViewModel @Inject constructor(
             // Insert test order
            /*orderRepository.insertOrder(
                 Order(
-                    orderId = 1,
+                    orderId = "sample-order",
                     date = "2022.10.15 12:05:12",
-                    delivererTime = "As fast as possible",
-                    delivererName = "Paper Factory Ltd",
+                    deliveryTime = "As fast as possible",
+                    structureName = "Direction Générale",
                     products = listOf(
                         BoughtProduct(
                             productId = 1,
@@ -61,7 +59,6 @@ class OrderViewModel @Inject constructor(
                     )
                 )
             )*/
-            //delivererRepository.insertDeliverers(DummyData.deliverers)
         }
     }
 

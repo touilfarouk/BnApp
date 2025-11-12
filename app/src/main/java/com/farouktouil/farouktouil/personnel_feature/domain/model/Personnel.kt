@@ -24,6 +24,13 @@ data class Personnel(
             .filter { it.isNotEmpty() }
             .joinToString(" ")
 
+    val bestGuessName: String
+        get() = fullName.ifBlank {
+            name?.trim()?.takeIf { it.isNotEmpty() }
+                ?: username?.trim()?.takeIf { it.isNotEmpty() }
+                ?: "Personnel inconnu"
+        }
+
     val displayStructure: String?
         get() = structure?.trim().takeUnless { it.isNullOrEmpty() }
 

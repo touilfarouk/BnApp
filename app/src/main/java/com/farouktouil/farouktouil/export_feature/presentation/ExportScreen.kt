@@ -43,12 +43,12 @@ fun ExportScreen(
 
     val fileExportState = exportViewModel.fileExportState
     val context = LocalContext.current
-    val availableDeliverers = exportViewModel.availableDeliverers
-    val selectedDelivererName = exportViewModel.selectedDelivererName
+    val availableStructures = exportViewModel.availableStructures
+    val selectedStructureName = exportViewModel.selectedStructureName
 
-    // Load available deliverers when screen is first shown
+    // Load available structures when screen is first shown
     LaunchedEffect(Unit) {
-        exportViewModel.loadAvailableDeliverers()
+        exportViewModel.loadAvailableStructures()
     }
 
     LaunchedEffect(key1 = fileExportState){
@@ -84,9 +84,9 @@ fun ExportScreen(
                 .fillMaxSize()
                 .padding(50.dp),
         ){
-            // Deliverer Selection Dropdown
+            // Structure Selection Dropdown
             var expanded by remember { mutableStateOf(false) }
-            val selectedDeliverer = selectedDelivererName
+            val selectedStructure = selectedStructureName
 
             ExposedDropdownMenuBox(
                 expanded = expanded,
@@ -94,10 +94,10 @@ fun ExportScreen(
                 modifier = Modifier.fillMaxWidth(0.8f)
             ) {
                 OutlinedTextField(
-                    value = selectedDeliverer ?: "All Deliverers",
+                    value = selectedStructure ?: "Toutes les structures",
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Select Deliverer") },
+                    label = { Text("Sélectionner une structure") },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
 
@@ -110,21 +110,21 @@ fun ExportScreen(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    // "All Deliverers" option
+                    // "All structures" option
                     DropdownMenuItem(
-                        text = { Text("All Deliverers") },
+                        text = { Text("Toutes les structures") },
                         onClick = {
-                            exportViewModel.setSelectedDeliverer(null)
+                            exportViewModel.setSelectedStructure(null)
                             expanded = false
                         }
                     )
 
-                    // Individual deliverer options
-                    availableDeliverers.forEach { deliverer ->
+                    // Individual structure options
+                    availableStructures.forEach { structure ->
                         DropdownMenuItem(
-                            text = { Text(deliverer) },
+                            text = { Text(structure) },
                             onClick = {
-                                exportViewModel.setSelectedDeliverer(deliverer)
+                                exportViewModel.setSelectedStructure(structure)
                                 expanded = false
                             }
                         )

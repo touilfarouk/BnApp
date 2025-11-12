@@ -1,6 +1,5 @@
 package com.farouktouil.farouktouil.order_feature.di
 
-import com.farouktouil.farouktouil.core.data.local.DelivererDao
 import com.farouktouil.farouktouil.core.data.local.OrderDao
 import com.farouktouil.farouktouil.core.data.local.ProductDao
 import com.farouktouil.farouktouil.order_feature.data.repository.OrderRepositoryImpl
@@ -8,6 +7,7 @@ import com.farouktouil.farouktouil.order_feature.domain.repository.OrderReposito
 import com.farouktouil.farouktouil.order_feature.domain.use_case.ConfirmOrderUseCase
 import com.farouktouil.farouktouil.order_feature.domain.use_case.FilterListByNameUseCase
 import com.farouktouil.farouktouil.order_feature.domain.use_case.SortListByNameUseCase
+import com.farouktouil.farouktouil.personnel_feature.data.local.dao.PersonnelDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,10 +22,10 @@ object OrderFeatureModule {
     @Singleton
     fun provideOrderRepository(
         orderDao:OrderDao,
-        delivererDao:DelivererDao,
-        productDao: ProductDao
+        productDao: ProductDao,
+        personnelDao: PersonnelDao
     ):OrderRepository{
-        return OrderRepositoryImpl(orderDao,delivererDao,productDao)
+        return OrderRepositoryImpl(orderDao,productDao,personnelDao)
     }
 
     @Provides

@@ -3,12 +3,12 @@ package com.farouktouil.farouktouil.order_feature.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.farouktouil.farouktouil.core.domain.model.Deliverer
+import com.farouktouil.farouktouil.core.domain.model.Structure
 import com.farouktouil.farouktouil.order_feature.domain.repository.OrderRepository
 import com.farouktouil.farouktouil.order_feature.domain.use_case.FilterListByNameUseCase
 import com.farouktouil.farouktouil.order_feature.domain.use_case.SortListByNameUseCase
-import com.farouktouil.farouktouil.order_feature.presentation.mapper.toDelivererListItem
-import com.farouktouil.farouktouil.order_feature.presentation.state.DelivererListItem
+import com.farouktouil.farouktouil.order_feature.presentation.mapper.toStructureListItem
+import com.farouktouil.farouktouil.order_feature.presentation.state.StructureListItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,56 +20,48 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class OrderChooseDelivererViewModel @Inject constructor(
+class OrderChooseStructureViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
     private val sortListByNameUseCase: SortListByNameUseCase,
     private val filterListByNameUseCase: FilterListByNameUseCase
 ) : ViewModel() {
 
-    // StateFlow for the list of deliverers to display
-    private val _deliverersToShow = MutableStateFlow<List<DelivererListItem>>(emptyList())
-    val deliverersToShow: StateFlow<List<DelivererListItem>> = _deliverersToShow
+    private val _structuresToShow = MutableStateFlow<List<StructureListItem>>(emptyList())
+    val structuresToShow: StateFlow<List<StructureListItem>> = _structuresToShow
 
-    // StateFlow for the search query
-    private val _delivererSearchQuery = MutableStateFlow("")
-    val delivererSearchQuery: StateFlow<String> = _delivererSearchQuery
+    private val _structureSearchQuery = MutableStateFlow("")
+    val structureSearchQuery: StateFlow<String> = _structureSearchQuery
 
-    // StateFlow for loading state
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // StateFlow for error messages
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    // Collect the Flow from the repository
-    private val deliverersFlow: Flow<List<Deliverer>> = orderRepository.getDeliverers()
+    private val structuresFlow: Flow<List<Structure>> = orderRepository.getStructures()
 
     init {
-        // Observe the Flow and update deliverersToShow whenever the data changes
         viewModelScope.launch {
-            deliverersFlow
-                .combine(_delivererSearchQuery.debounce(300)) { deliverers, query ->
-                    // Filter and sort the deliverers based on the search query
+            structuresFlow
+                .combine(_structureSearchQuery.debounce(300)) { structures, query ->
                     filterListByNameUseCase(
-                        sortListByNameUseCase(deliverers),
+                        sortListByNameUseCase(structures),
                         query
-                    ).map { deliverer ->
-                        deliverer.toDelivererListItem()
+                    ).map { structure ->
+                        structure.toStructureListItem()
                     }
                 }
                 .catch { e ->
-                    _errorMessage.value = "Error fetching deliverers: ${e.message}"
+                    _errorMessage.value = "Error fetching structures: ${e.message}"
                 }
-                .collect { filteredDeliverers ->
-                    _deliverersToShow.value = filteredDeliverers
+                .collect { filteredStructures ->
+                    _structuresToShow.value = filteredStructures
                     _isLoading.value = false
                 }
         }
     }
 
-    // Update the search query and emit it to the StateFlow
     fun onSearchQueryChange(newValue: String) {
-        _delivererSearchQuery.value = newValue
+        _structureSearchQuery.value = newValue
     }
 }

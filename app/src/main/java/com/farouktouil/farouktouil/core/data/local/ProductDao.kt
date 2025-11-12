@@ -24,8 +24,8 @@ interface ProductDao {
     @Query("SELECT * FROM products")
     fun getAllProducts(): Flow<List<ProductEntity>>
 
-    @Query("SELECT * FROM products WHERE belongsToDeliverer = :delivererId")
-    fun getProductsForDeliverer(delivererId: Int): Flow<List<ProductEntity>>
+    @Query("SELECT * FROM products WHERE structureName = :structureName")
+    fun getProductsForStructure(structureName: String): Flow<List<ProductEntity>>
 
     // Quantity-related operations
     @Query("SELECT * FROM products WHERE quantity <= minQuantity")

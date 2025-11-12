@@ -29,11 +29,11 @@ class ProductRepositoryImpl @Inject constructor(
 
     override fun getAllProducts(): Flow<List<Product>> {
         return productDao.getAllProducts()
-            .map { list -> list.map { it.toProduct() } } // ✅ Apply your existing mapper
+            .map { list -> list.map { it.toProduct() } }
     }
 
-    override fun getProductsForDeliverer(delivererId: Int): Flow<List<Product>> {
-        return productDao.getProductsForDeliverer(delivererId)
-            .map { list -> list.map { it.toProduct() } } // ✅ Apply the mapper correctly
+    override fun getProductsForStructure(structureName: String): Flow<List<Product>> {
+        return productDao.getProductsForStructure(structureName)
+            .map { list -> list.map { it.toProduct() } }
     }
 }

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.farouktouil.farouktouil.personnel_feature.data.local.PersonnelEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PersonnelDao {
@@ -38,4 +39,7 @@ interface PersonnelDao {
 
     @Query("DELETE FROM personnel")
     suspend fun clearAll()
+
+    @Query("SELECT DISTINCT structure FROM personnel WHERE structure IS NOT NULL AND structure != '' ORDER BY structure COLLATE NOCASE")
+    fun getDistinctStructures(): Flow<List<String>>
 }

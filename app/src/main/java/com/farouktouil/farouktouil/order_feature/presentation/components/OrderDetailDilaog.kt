@@ -55,11 +55,19 @@ fun OrderDetailDialog(
             ){
                 Column {
                     Text(
-                        "Ordered from ${orderDetailListItem.delivererName}",
+                        "Commandé pour ${orderDetailListItem.structureName}",
                         fontSize = 25.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        "Délai de livraison : ${orderDetailListItem.deliveryTime}",
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
                     )
                     Text(
                         orderDetailListItem.orderDate,

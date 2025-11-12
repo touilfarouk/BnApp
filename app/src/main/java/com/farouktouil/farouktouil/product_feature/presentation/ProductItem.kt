@@ -18,17 +18,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.farouktouil.farouktouil.core.data.local.entities.DelivererEntity
 import com.farouktouil.farouktouil.core.domain.model.Product
 
 @Composable
 fun ProductItem(
     product: Product,
-    deliverers: List<DelivererEntity>,
     onDelete: () -> Unit
 ) {
-    // Find the deliverer name by ID
-    val delivererName = deliverers.find { it.delivererId == product.belongsToDeliverer.toInt() }?.name ?: "Unknown"
 
     Card(
         modifier = Modifier
@@ -39,7 +35,8 @@ fun ProductItem(
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Product: ${product.name}", style = MaterialTheme.typography.bodySmall)
             Text(text = "Price: ${product.pricePerAmount}", style = MaterialTheme.typography.bodySmall)
-            Text(text = "Deliverer: $delivererName (ID: ${product.belongsToDeliverer})", style = MaterialTheme.typography.bodySmall)
+            val structureLabel = product.structureName ?: "Non assignée"
+            Text(text = "Structure: $structureLabel", style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(8.dp))
             IconButton(onClick = onDelete) {
                 Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Product")

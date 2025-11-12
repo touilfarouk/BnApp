@@ -14,10 +14,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.farouktouil.farouktouil.barcode_feature.presentation.BarcodeGeneratorScreen
 import com.farouktouil.farouktouil.consultation_feature.presentation.ConsultationScreen
-import com.farouktouil.farouktouil.deliverer_feature.presentation.DelivererScreen
 import com.farouktouil.farouktouil.news_feature.presentation.NewsScreen
-import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseDelivererScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseProductsScreen
+import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseStructureScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderScreen
 import com.farouktouil.farouktouil.personnel_feature.presentation.PersonnelScreen
 import com.farouktouil.farouktouil.product_feature.presentation.BarcodeScannerScreen
@@ -46,36 +45,37 @@ fun Navigation() {
             composable(ScreenRoutes.OrderScreen.route) {
                 OrderScreen(navController = navController, drawerState = drawerState, scope = scope)
             }
-            composable(ScreenRoutes.DelivererScreen.route) {
-                DelivererScreen(navController = navController, drawerState = drawerState, scope = scope)
-            }
             composable(ScreenRoutes.ProductScreen.route) {
                 ProductScreen(
                     navController = navController,
-                    delivererId = null, drawerState = drawerState, scope = scope
+                    drawerState = drawerState,
+                    scope = scope,
+                    structureNameArg = null
                 )
             }
             composable(
-                route = ScreenRoutes.ProductScreen.route + "/{delivererId}",
-                arguments = listOf(navArgument("delivererId") {
-                    type = NavType.IntType
+                route = ScreenRoutes.ProductScreen.route + "/{structureName}",
+                arguments = listOf(navArgument("structureName") {
+                    type = NavType.StringType
                 })
             ) { backStackEntry ->
-                val delivererId = backStackEntry.arguments?.getInt("delivererId")
+                val structureName = backStackEntry.arguments?.getString("structureName")
                 ProductScreen(
                     navController = navController,
-                    delivererId = delivererId, drawerState = drawerState, scope = scope
+                    drawerState = drawerState,
+                    scope = scope,
+                    structureNameArg = structureName
                 )
             }
 
-            composable(ScreenRoutes.OrderChooseDelivererScreen.route) {
-                OrderChooseDelivererScreen(navController = navController)
+            composable(ScreenRoutes.OrderChooseStructureScreen.route) {
+                OrderChooseStructureScreen(navController = navController)
             }
-            composable(ScreenRoutes.OrderChooseProductsScreen.route + "/{delivererId}") { backStackEntry ->
-                val delivererId = backStackEntry.arguments?.getString("delivererId")?.toIntOrNull() ?: 0
+            composable(ScreenRoutes.OrderChooseProductsScreen.route + "/{structureName}") { backStackEntry ->
+                val structureName = backStackEntry.arguments?.getString("structureName")
                 OrderChooseProductsScreen(
                     navController = navController,
-                    delivererId = delivererId
+                    structureName = structureName
                 )
             }
 
@@ -158,9 +158,8 @@ fun Navigation() {
 
 sealed class ScreenRoutes(val route:String){
     object OrderScreen:ScreenRoutes("order_screen")
-    object OrderChooseDelivererScreen:ScreenRoutes("order_choose_deliverer_screen")
+    object OrderChooseStructureScreen:ScreenRoutes("order_choose_structure_screen")
     object OrderChooseProductsScreen:ScreenRoutes("order_choose_products_screen")
-    object DelivererScreen:ScreenRoutes("deliverer_screen")
     object ProductScreen:ScreenRoutes("product_screen")
     object ContactScreen:ScreenRoutes("contact_screen")
     object PersonnelScreen:ScreenRoutes("personnel_screen")

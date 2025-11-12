@@ -63,7 +63,7 @@ fun OrderScreen(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        navController.navigate(ScreenRoutes.OrderChooseDelivererScreen.route)
+                        navController.navigate(ScreenRoutes.OrderChooseStructureScreen.route)
                     }
                 ) {
                     Icon(

@@ -18,14 +18,14 @@ class ConfirmOrderUseCase @Inject constructor(
 ) {
 
     @SuppressLint("NewApi")
-    suspend operator fun invoke(products: List<BoughtProduct>, delivererId: Int) {
+    suspend operator fun invoke(products: List<BoughtProduct>, structureName: String) {
         // Validate input
         if (products.isEmpty()) {
             throw IllegalArgumentException("No products selected for order")
         }
 
-        if (delivererId <= 0) {
-            throw IllegalArgumentException("Invalid deliverer selected")
+        if (structureName.isBlank()) {
+            throw IllegalArgumentException("Invalid structure selected")
         }
 
         return withContext(Dispatchers.IO) {
@@ -44,16 +44,12 @@ class ConfirmOrderUseCase @Inject constructor(
                     }
                 }
 
-                // Get deliverer name
-                val delivererName = orderRepository.getDelivererNameById(delivererId)
-                    ?: throw IllegalArgumentException("Deliverer not found with ID: $delivererId")
-
                 // Create and insert the order
                 val order = Order(
                     orderId = UUID.randomUUID().toString(),
                     date = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now()),
-                    delivererTime = "As fast as possible",
-                    delivererName = delivererName,
+                    deliveryTime = "As fast as possible",
+                    structureName = structureName,
                     products = products
                 )
 

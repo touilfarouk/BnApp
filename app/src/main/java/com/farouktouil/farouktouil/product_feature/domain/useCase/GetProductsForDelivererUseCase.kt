@@ -5,10 +5,10 @@ import com.farouktouil.farouktouil.product_feature.domain.repository.ProductsRep
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetProductsForDelivererUseCase @Inject constructor(
+class GetProductsForStructureUseCase @Inject constructor(
     private val repository: ProductsRepository
 ) {
-    operator fun invoke(delivererId: Int): Flow<List<Product>> {
-        return repository.getProductsForDeliverer(delivererId)
+    operator fun invoke(structureName: String): Flow<List<Product>> {
+        return repository.getProductsForStructure(structureName)
     }
 }

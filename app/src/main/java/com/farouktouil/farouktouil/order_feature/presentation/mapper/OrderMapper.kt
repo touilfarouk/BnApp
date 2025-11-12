@@ -7,7 +7,8 @@ import com.farouktouil.farouktouil.order_feature.presentation.state.OrderListIte
 fun Order.toOrderDetailListItem():OrderDetailListItem{
     return OrderDetailListItem(
         orderId = orderId,
-        delivererName = delivererName,
+        structureName = structureName,
+        deliveryTime = deliveryTime,
         orderDate = date,
         products = products.map { boughtProduct ->
             boughtProduct.toProductListItem()
@@ -18,7 +19,7 @@ fun Order.toOrderDetailListItem():OrderDetailListItem{
 fun Order.toOrderListItem():OrderListItem{
     return OrderListItem(
         orderId = orderId,
-        delivererName = delivererName,
+        structureName = structureName,
         orderDate = date,
         totalAmount = products.sumOf { (it.amount*it.pricePerAmount).toDouble() }
     )

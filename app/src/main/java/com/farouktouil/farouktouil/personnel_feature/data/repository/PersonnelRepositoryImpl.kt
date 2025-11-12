@@ -6,20 +6,26 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.farouktouil.farouktouil.core.data.local.AppDatabase
+import androidx.room.withTransaction
 import com.farouktouil.farouktouil.personnel_feature.data.mapper.toDomain
+import com.farouktouil.farouktouil.personnel_feature.data.mapper.toEntities
 import com.farouktouil.farouktouil.personnel_feature.data.remote.PersonnelApiService
+import com.farouktouil.farouktouil.personnel_feature.data.remote.PersonnelRemoteDataSource
 import com.farouktouil.farouktouil.personnel_feature.data.remote.PersonnelRemoteMediator
 import com.farouktouil.farouktouil.personnel_feature.domain.model.Personnel
 import com.farouktouil.farouktouil.personnel_feature.domain.model.PersonnelSearchQuery
 import com.farouktouil.farouktouil.personnel_feature.domain.repository.PersonnelRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
 class PersonnelRepositoryImpl @Inject constructor(
     private val appDatabase: AppDatabase,
-    private val personnelApiService: PersonnelApiService
+    private val personnelApiService: PersonnelApiService,
+    private val personnelRemoteDataSource: PersonnelRemoteDataSource
 ) : PersonnelRepository {
 
     override fun getPersonnel(searchQuery: PersonnelSearchQuery): Flow<PagingData<Personnel>> {
@@ -47,5 +53,17 @@ class PersonnelRepositoryImpl @Inject constructor(
         ).flow.map {
             it.map { it.toDomain() }
         }
+    }
+
+    override suspend fun getPersonnelDirectory(): List<Personnel> = withContext(Dispatchers.IO) {
+        val remotePersonnel = personnelRemoteDataSource.fetchAllPersonnel()
+
+        if (remotePersonnel.isNotEmpty()) {
+            appDatabase.withTransaction {
+                appDatabase.personnelDao().insertAll(remotePersonnel.toEntities())
+            }
+        }
+
+        remotePersonnel.map { it.toDomain() }
     }
 }

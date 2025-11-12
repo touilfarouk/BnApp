@@ -12,14 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.farouktouil.farouktouil.order_feature.presentation.state.DelivererListItem
+import com.farouktouil.farouktouil.order_feature.presentation.state.StructureListItem
 import com.farouktouil.farouktouil.ui.theme.onPrimaryLight
 import com.farouktouil.farouktouil.ui.theme.primaryLight
 
 
 @Composable
-fun DelivererUiListItem(
-    delivererListItem: DelivererListItem,
+fun StructureUiListItem(
+    structureListItem: StructureListItem,
     modifier: Modifier = Modifier
 ) {
 
@@ -29,7 +29,7 @@ fun DelivererUiListItem(
         verticalAlignment = Alignment.CenterVertically
     ){
         Text(
-            delivererListItem.name,
+            structureListItem.name,
             color =  primaryLight
         )
         Row(
