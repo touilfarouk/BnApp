@@ -111,8 +111,9 @@ fun OrderChooseProductsScreen(
                             .clickable { viewModel.onListItemClick(productListItem.id) }
                             .padding(10.dp),
                         isExpanded = productListItem.isExpanded,
-                        onMinusClick = { viewModel.onMinusClick(productListItem.id) },
-                        onPlusClick = { viewModel.onPlusClick(productListItem.id) }
+                        onAccessoryToggle = { accessoryType, isSelected ->
+                            viewModel.onAccessoryToggle(productListItem.id, accessoryType, isSelected)
+                        }
                     )
                 }
             }

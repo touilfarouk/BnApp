@@ -1,6 +1,7 @@
 package com.farouktouil.farouktouil.order_feature.di
 
 import com.farouktouil.farouktouil.core.data.local.OrderDao
+import com.farouktouil.farouktouil.core.data.local.ProductAccessoryDao
 import com.farouktouil.farouktouil.core.data.local.ProductDao
 import com.farouktouil.farouktouil.order_feature.data.repository.OrderRepositoryImpl
 import com.farouktouil.farouktouil.order_feature.domain.repository.OrderRepository
@@ -23,9 +24,10 @@ object OrderFeatureModule {
     fun provideOrderRepository(
         orderDao:OrderDao,
         productDao: ProductDao,
+        productAccessoryDao: ProductAccessoryDao,
         personnelDao: PersonnelDao
     ):OrderRepository{
-        return OrderRepositoryImpl(orderDao,productDao,personnelDao)
+        return OrderRepositoryImpl(orderDao,productDao,productAccessoryDao,personnelDao)
     }
 
     @Provides

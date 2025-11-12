@@ -4,12 +4,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.layout.wrapContentHeight
+import com.farouktouil.farouktouil.core.domain.model.AccessoryType
 import com.farouktouil.farouktouil.order_feature.presentation.state.ProductListItem
 import com.farouktouil.farouktouil.R
 
@@ -27,8 +27,7 @@ import com.farouktouil.farouktouil.R
 fun ProductUiListItem(
     productListItem: ProductListItem,
     isExpanded:Boolean,
-    onPlusClick:()->Unit,
-    onMinusClick:()->Unit,
+    onAccessoryToggle: (AccessoryType, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -95,28 +94,33 @@ fun ProductUiListItem(
         }
         AnimatedVisibility(isExpanded) {
             Divider(color =  Color.Gray)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(25.dp)
-            ){
-                IconButton(onClick = {
-                    onMinusClick()
-                }){
-                    Icon(
-                        imageVector = Icons.Default.Remove,
-                        contentDescription = "minus",
-                        tint =  Color.Gray
-                    )
-                }
-                IconButton(onClick = {
-                    onPlusClick()
-                }){
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "plus",
-                        tint =  Color.Gray
-                    )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                AccessoryType.values().forEach { accessoryType ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val isSelected = productListItem.accessories.contains(accessoryType)
+                        Checkbox(
+                            checked = isSelected,
+                            onCheckedChange = { checked ->
+                                onAccessoryToggle(accessoryType, checked)
+                            }
+                        )
+                        Text(
+                            text = stringResource(id = accessoryType.labelRes),
+                            color = Color.Gray,
+                            style = androidx.compose.material3.MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }

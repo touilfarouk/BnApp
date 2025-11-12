@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.farouktouil.farouktouil.consultation_feature.data.local.dao.AppelConsultationDao
 import com.farouktouil.farouktouil.core.data.local.AppDatabase
 import com.farouktouil.farouktouil.core.data.local.OrderDao
+import com.farouktouil.farouktouil.core.data.local.ProductAccessoryDao
 import com.farouktouil.farouktouil.core.data.local.ProductDao
 import com.farouktouil.farouktouil.news_feature.data.local.dao.NewsDao
 import com.farouktouil.farouktouil.news_feature.data.local.dao.NewsRemoteKeysDao
@@ -42,6 +43,12 @@ object DatabaseModule {
     @Singleton
     fun provideProductDao(appDatabase: AppDatabase): ProductDao {
         return appDatabase.productDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideProductAccessoryDao(appDatabase: AppDatabase): ProductAccessoryDao {
+        return appDatabase.productAccessoryDao()
     }
 
     @Provides

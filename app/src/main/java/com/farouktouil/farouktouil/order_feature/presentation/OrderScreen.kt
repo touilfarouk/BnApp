@@ -74,7 +74,7 @@ fun OrderScreen(
             },
             topBar = {
                 TopAppBar(
-                    title = { Text("Commandes") },
+                    title = { Text("Liste des affectations") },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")

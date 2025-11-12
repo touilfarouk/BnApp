@@ -36,6 +36,12 @@
     <string name="order_product_search_label">Rechercher par nom, label, structure ou personnel</string>
     <string name="order_product_structure_label">Structure : %s</string>
     <string name="order_product_personnel_label">Personnel : %s</string>
+    <string name="accessory_mouse">Souris</string>
+    <string name="accessory_keyboard">Clavier</string>
+    <string name="accessory_ups">Onduleur</string>
+    <string name="accessory_chair">Chaise</string>
+    <string name="accessory_desk">Bureau</string>
+    <string name="accessory_printer">Imprimante</string>
 
     <!-- Détails du Matériels et équipements -->
     <string name="product_details">Détails du Matériels et équipements</string>

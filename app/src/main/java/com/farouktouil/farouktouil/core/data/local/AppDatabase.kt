@@ -19,6 +19,7 @@ import com.farouktouil.farouktouil.news_feature.data.local.entity.NewsRemoteKey
 
 import com.farouktouil.farouktouil.core.data.local.entities.OrderEntity
 import com.farouktouil.farouktouil.core.data.local.entities.OrderProductEntity
+import com.farouktouil.farouktouil.core.data.local.entities.ProductAccessoryEntity
 import com.farouktouil.farouktouil.core.data.local.entities.ProductEntity
 import com.farouktouil.farouktouil.personnel_feature.data.local.PersonnelEntity
 import com.farouktouil.farouktouil.personnel_feature.data.local.dao.PersonnelDao
@@ -30,6 +31,7 @@ import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_40_41
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_41_42
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_43_44
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_46_47
+import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_47_48
 import com.farouktouil.farouktouil.personnel_feature.data.local.dao.RemoteKeysDao
 import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteKey
 
@@ -38,6 +40,7 @@ import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteK
         OrderEntity::class,
         OrderProductEntity::class,
         ProductEntity::class,
+        ProductAccessoryEntity::class,
         PersonnelEntity::class,
         RemoteKey::class,
         AppelConsultationEntity::class,
@@ -46,7 +49,7 @@ import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteK
         NewsEntity::class,
         NewsRemoteKey::class
     ],
-    version = 47,
+    version = 48,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -72,7 +75,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_40_41,
                     MIGRATION_41_42,
                     MIGRATION_43_44,
-                    MIGRATION_46_47
+                    MIGRATION_46_47,
+                    MIGRATION_47_48
                 )
                 .fallbackToDestructiveMigration()
                 .createFromAsset("database/initial_data.db") // Optional: If you have initial data
@@ -84,6 +88,7 @@ abstract class AppDatabase : RoomDatabase() {
     }
     abstract fun orderDao():OrderDao
     abstract fun productDao():ProductDao
+    abstract fun productAccessoryDao(): ProductAccessoryDao
     abstract fun personnelDao(): PersonnelDao
     abstract fun remoteKeysDao(): RemoteKeysDao
     abstract fun consultationRemoteKeysDao(): ConsultationRemoteKeysDao

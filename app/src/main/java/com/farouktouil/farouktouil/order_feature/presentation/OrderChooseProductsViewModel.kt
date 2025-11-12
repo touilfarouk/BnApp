@@ -3,6 +3,7 @@ package com.farouktouil.farouktouil.order_feature.presentation
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.farouktouil.farouktouil.core.domain.model.AccessoryType
 import com.farouktouil.farouktouil.core.domain.model.Product
 import com.farouktouil.farouktouil.order_feature.domain.repository.OrderRepository
 import com.farouktouil.farouktouil.order_feature.domain.use_case.ConfirmOrderUseCase
@@ -14,9 +15,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.properties.Delegates
+
 @HiltViewModel
 class OrderChooseProductsViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
@@ -55,6 +57,18 @@ class OrderChooseProductsViewModel @Inject constructor(
     // Current structure name
     private var structureName: String = ""
 
+    private val accessorySelections = MutableStateFlow<Map<Int, Set<AccessoryType>>>(emptyMap())
+
+    init {
+        viewModelScope.launch {
+            orderRepository.observeProductAccessories()
+                .collect { selections ->
+                    accessorySelections.value = selections.associate { it.productId to it.selectedTypes }
+                    setupProductsToShow()
+                }
+        }
+    }
+
     // Initialize the product list for a specific structure
     fun initProductList(structureName: String) {
         viewModelScope.launch {
@@ -69,6 +83,35 @@ class OrderChooseProductsViewModel @Inject constructor(
                     setupProductsToShow()
                     _isLoading.value = false
                 }
+        }
+    }
+
+    fun onAccessoryToggle(productId: Int, accessoryType: AccessoryType, isSelected: Boolean) {
+        viewModelScope.launch {
+            val currentSelections = accessorySelections.value[productId] ?: emptySet()
+            val updatedSelections = if (isSelected) {
+                currentSelections + accessoryType
+            } else {
+                currentSelections - accessoryType
+            }
+
+            accessorySelections.update { currentMap ->
+                val mutable = currentMap.toMutableMap()
+                if (updatedSelections.isEmpty()) {
+                    mutable.remove(productId)
+                } else {
+                    mutable[productId] = updatedSelections
+                }
+                mutable
+            }
+
+            _productsToShow.update { currentList ->
+                currentList.map { item ->
+                    if (item.id == productId) item.copy(accessories = updatedSelections) else item
+                }
+            }
+
+            orderRepository.updateProductAccessories(productId, updatedSelections)
         }
     }
 
@@ -92,13 +135,20 @@ class OrderChooseProductsViewModel @Inject constructor(
             }
         }
         val sortedProducts = sortListByNameUseCase(filteredProducts)
-        _productsToShow.value = sortedProducts.map { product ->
-            val selectedItem = _selectedProducts.value.firstOrNull { it.id == product.productId }
-            if (selectedItem != null) {
+        val previousItems = _productsToShow.value.associateBy { it.id }
+        _productsToShow.value = sortedProducts.mapNotNull { product ->
+            val productId = product.productId ?: return@mapNotNull null
+            val accessories = accessorySelections.value[productId] ?: previousItems[productId]?.accessories ?: emptySet()
+            val selectedItem = _selectedProducts.value.firstOrNull { it.id == productId }
+            val baseItem = if (selectedItem != null) {
                 product.toProductListItem().copy(selectedAmount = selectedItem.selectedAmount)
             } else {
                 product.toProductListItem()
             }
+            baseItem.copy(
+                isExpanded = previousItems[productId]?.isExpanded ?: baseItem.isExpanded,
+                accessories = accessories
+            )
         }
     }
 
