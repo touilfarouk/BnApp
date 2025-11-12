@@ -64,7 +64,7 @@ fun OrderChooseStructureScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Section des commandes") },
+                title = { Text("Section des affectations") },
                 colors = TopAppBarDefaults.mediumTopAppBarColors()
             )
         }

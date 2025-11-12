@@ -44,7 +44,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -76,6 +75,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import com.farouktouil.farouktouil.product_feature.presentation.state.PersonnelListItem
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,27 +128,30 @@ fun ProductScreen(
                       Column {
                         Text(stringResource(id = R.string.products))
                         selectedStructureName?.takeIf { it.isNotBlank() }?.let { name ->
-                            Text(stringResource(id = R.string.filtered_by, name), style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                stringResource(id = R.string.filtered_by_structure, name),
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         }
                         // Inventory Statistics
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Text(
-                                stringResource(id = R.string.total_items, uiState.totalInventoryQuantity),
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Text(
-                                stringResource(id = R.string.inventory_value, String.format("%.2f", uiState.totalInventoryValue)),
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            if (uiState.lowStockCount > 0) {
-                                Text(
-                                    stringResource(id = R.string.low_stock, uiState.lowStockCount),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Red
-                                )
-                            }
+//                            Text(
+//                                stringResource(id = R.string.total_items, uiState.totalInventoryQuantity),
+//                                style = MaterialTheme.typography.bodySmall
+//                            )
+//                            Text(
+//                                stringResource(id = R.string.inventory_value, String.format("%.2f", uiState.totalInventoryValue)),
+//                                style = MaterialTheme.typography.bodySmall
+//                            )
+//                            if (uiState.lowStockCount > 0) {
+//                                Text(
+//                                    stringResource(id = R.string.low_stock, uiState.lowStockCount),
+//                                    style = MaterialTheme.typography.bodySmall,
+//                                    color = Color.Red
+//                                )
+//                            }
                         }
                     }
                 },
@@ -284,11 +287,7 @@ fun ProductScreen(
                                 .clickable {
                                     editingProduct.value = product
                                     name.value = product.name
-                                    price.value = product.pricePerAmount.toString()
                                     label.value = product.label
-                                    quantity.value = product.quantity.toString()
-                                    minQuantity.value = product.minQuantity.toString()
-                                    maxQuantity.value = product.maxQuantity.toString()
                                     selectedStructure.value = product.structureName
                                     selectedPersonnel.value = resolvePersonnel(product)
                                     isAddingProduct.value = true
@@ -305,11 +304,8 @@ fun ProductScreen(
                                     if (product.label.isNotEmpty()) {
                                         Text(text = product.label, style = MaterialTheme.typography.bodySmall)
                                     }
-                                    Text(text = "Price: $${product.pricePerAmount}")
-                                    Text(text = "Quantity: ${product.quantity}")
-                                    Text(text = "Min: ${product.minQuantity}, Max: ${product.maxQuantity}")
                                     product.structureName?.let { structure ->
-                                        Text(text = stringResource(id = R.string.filtered_by, structure))
+                                        Text(text = stringResource(id = R.string.filtered_by_structure, structure))
                                     }
                                     product.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { assignee ->
                                         Text(
@@ -317,28 +313,11 @@ fun ProductScreen(
                                             style = MaterialTheme.typography.bodySmall
                                         )
                                     }
-
-                                    // Stock status indicator
-                                    val stockStatus = when {
-                                        product.quantity <= product.minQuantity -> "Low Stock"
-                                        product.quantity >= product.maxQuantity -> "Over Stock"
-                                        else -> "Normal Stock"
-                                    }
-                                    val stockColor = when {
-                                        product.quantity <= product.minQuantity -> Color.Red
-                                        product.quantity >= product.maxQuantity -> Color.Yellow
-                                        else -> Color.Green
-                                    }
-                                    Text(text = stockStatus, color = stockColor, style = MaterialTheme.typography.bodySmall)
                                 }
                                 IconButton(onClick = {
                                     editingProduct.value = product
                                     name.value = product.name
-                                    price.value = product.pricePerAmount.toString()
                                     label.value = product.label
-                                    quantity.value = product.quantity.toString()
-                                    minQuantity.value = product.minQuantity.toString()
-                                    maxQuantity.value = product.maxQuantity.toString()
                                     selectedStructure.value = product.structureName
                                     selectedPersonnel.value = resolvePersonnel(product)
                                     isAddingProduct.value = true

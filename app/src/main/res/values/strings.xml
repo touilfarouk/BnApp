@@ -28,11 +28,14 @@
     <string name="deliverer">Structure</string>
     <string name="select_deliverer">Sélectionner une Structure</string>
     <string name="all_structures">Toutes les Structures</string>
-    <string name="filtered_by">Filtré par : %s</string>
+    <string name="filtered_by_structure">Structure : %s</string>
     <string name="filter_by_deliverer">Filtrer par Structure</string>
     <string name="total_items">Total : %d articles</string>
     <string name="inventory_value">Valeur : $%s</string>
     <string name="low_stock">Stock faible : %d</string>
+    <string name="order_product_search_label">Rechercher par nom, label, structure ou personnel</string>
+    <string name="order_product_structure_label">Structure : %s</string>
+    <string name="order_product_personnel_label">Personnel : %s</string>
 
     <!-- Détails du Matériels et équipements -->
     <string name="product_details">Détails du Matériels et équipements</string>

@@ -924,7 +924,7 @@
     <issue
         id="MissingTranslation"
         message="&quot;filtered_by&quot; is not translated in &quot;fr&quot; (French)"
-        errorLine1="    &lt;string name=&quot;filtered_by&quot;>Filtré par : %s&lt;/string>"
+        errorLine1="    &lt;string name=&quot;filtered_by_structure&quot;>Filtré par : %s&lt;/string>"
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"

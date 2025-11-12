@@ -18,7 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.farouktouil.farouktouil.order_feature.presentation.state.ProductListItem
+import com.farouktouil.farouktouil.R
 
 
 @Composable
@@ -57,11 +59,22 @@ fun ProductUiListItem(
                         style = androidx.compose.material3.MaterialTheme.typography.bodySmall
                     )
                 }
-                Text(
-                    "%.2f".format(productListItem.pricePerAmount)+" DZ",
-                    color =  Color.Gray,
-                    fontSize = 14.sp
-                )
+                productListItem.structureName?.takeIf { it.isNotBlank() }?.let { structure ->
+                    Text(
+                        stringResource(id = R.string.order_product_structure_label, structure),
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall
+                    )
+                }
+                productListItem.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { assignee ->
+                    Text(
+                        stringResource(id = R.string.order_product_personnel_label, assignee),
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall
+                    )
+                }
             }
             AnimatedVisibility(productListItem.selectedAmount>0) {
                 Row(

@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.PriceCheck
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -27,6 +27,7 @@ import com.farouktouil.farouktouil.core.presentation.ScreenRoutes
 import com.farouktouil.farouktouil.order_feature.presentation.components.CheckoutDialog
 import com.farouktouil.farouktouil.order_feature.presentation.components.ProductUiListItem
 import com.farouktouil.farouktouil.ui.theme.primaryContainerLight
+import com.farouktouil.farouktouil.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,7 +88,7 @@ fun OrderChooseProductsScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onProductSearchQueryChange(it) },
-                label = { Text("Search Product") },
+                label = { Text(stringResource(id = R.string.order_product_search_label)) },
                 colors = TextFieldDefaults.colors(),
                 maxLines = 1,
                 modifier = Modifier.fillMaxWidth()

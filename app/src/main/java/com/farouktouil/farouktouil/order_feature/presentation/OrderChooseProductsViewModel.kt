@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.farouktouil.farouktouil.core.domain.model.Product
 import com.farouktouil.farouktouil.order_feature.domain.repository.OrderRepository
 import com.farouktouil.farouktouil.order_feature.domain.use_case.ConfirmOrderUseCase
-import com.farouktouil.farouktouil.order_feature.domain.use_case.FilterListByNameUseCase
 import com.farouktouil.farouktouil.order_feature.domain.use_case.SortListByNameUseCase
 import com.farouktouil.farouktouil.order_feature.presentation.mapper.toBoughtProduct
 import com.farouktouil.farouktouil.order_feature.presentation.mapper.toProductListItem
@@ -21,7 +20,6 @@ import kotlin.properties.Delegates
 @HiltViewModel
 class OrderChooseProductsViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
-    private val filterListByNameUseCase: FilterListByNameUseCase,
     private val sortListByNameUseCase: SortListByNameUseCase,
     private val confirmOrderUseCase: ConfirmOrderUseCase
 ) : ViewModel() {
@@ -82,7 +80,17 @@ class OrderChooseProductsViewModel @Inject constructor(
 
     // Setup the products to show (apply filters and sorting)
     private fun setupProductsToShow() {
-        val filteredProducts = filterListByNameUseCase(_products.value, _searchQuery.value)
+        val query = _searchQuery.value.trim()
+        val filteredProducts = if (query.isBlank()) {
+            _products.value
+        } else {
+            _products.value.filter { product ->
+                product.name.contains(query, ignoreCase = true) ||
+                        product.label.contains(query, ignoreCase = true) ||
+                        product.structureName?.contains(query, ignoreCase = true) == true ||
+                        product.assignedPersonnelName?.contains(query, ignoreCase = true) == true
+            }
+        }
         val sortedProducts = sortListByNameUseCase(filteredProducts)
         _productsToShow.value = sortedProducts.map { product ->
             val selectedItem = _selectedProducts.value.firstOrNull { it.id == product.productId }
