@@ -62,7 +62,7 @@ fun OrderDetailDialog(
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
-                        "Délai de livraison : ${orderDetailListItem.deliveryTime}",
+                        "Heure de retrait : ${orderDetailListItem.checkoutTime}",
                         fontSize = 14.sp,
                         textAlign = TextAlign.Start,
                         modifier = Modifier
@@ -108,32 +108,8 @@ fun OrderDetailDialog(
                                         )
                                     }
                                 }
-                                Text(
-                                    "%.2f".format(it.pricePerAmount*it.selectedAmount)+" DZ"
-                                )
                             }
                         }
-                    }
-                }
-                Column(
-                ){
-
-                    Divider()
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ){
-
-                        Text(
-                            "Total ",
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            "%.2f".format(orderDetailListItem.products.sumOf { (it.selectedAmount*it.pricePerAmount).toDouble() })+" DZ",
-                            fontWeight = FontWeight.Bold
-                        )
                     }
                 }
             }

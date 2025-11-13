@@ -17,8 +17,11 @@ import com.farouktouil.farouktouil.order_feature.presentation.state.AffectationE
 import com.farouktouil.farouktouil.order_feature.presentation.state.ProductListItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -71,6 +74,9 @@ class OrderChooseProductsViewModel @Inject constructor(
     val exportState: StateFlow<AffectationExportState> = _exportState
 
     private var exportJob: Job? = null
+
+    private val _orderConfirmed = MutableSharedFlow<Unit>(replay = 0, extraBufferCapacity = 1)
+    val orderConfirmed: SharedFlow<Unit> = _orderConfirmed.asSharedFlow()
 
     // Current structure name
     private var structureName: String = ""
@@ -281,6 +287,7 @@ class OrderChooseProductsViewModel @Inject constructor(
                 _isCheckoutDialogShown.value = false
                 _errorMessage.value = null
                 _isAllSelected.value = false
+                _orderConfirmed.emit(Unit)
             } catch (e: IllegalArgumentException) {
                 _errorMessage.value = e.message
                 _isCheckoutDialogShown.value = false
@@ -335,12 +342,15 @@ class OrderChooseProductsViewModel @Inject constructor(
             base.copy(label = if (enrichedLabel.isBlank()) base.label else enrichedLabel)
         }
 
+        val checkoutTimestamp = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault()).format(Date())
+
         val exportOrder = Order(
             orderId = UUID.randomUUID().toString(),
-            date = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault()).format(Date()),
+            date = checkoutTimestamp,
             structureName = structureName,
-            deliveryTime = currentSelection.firstOrNull()?.assignedPersonnelName ?: "",
-            products = exportProducts
+            checkoutTime = checkoutTimestamp,
+            products = exportProducts,
+            personnelNames = exportProducts.mapNotNull { it.assignedPersonnelName }.distinct()
         )
 
         exportJob = viewModelScope.launch {

@@ -9,8 +9,8 @@ fun BoughtProduct.toProductListItem(): ProductListItem {
         id = productId,
         name = name,
         label = label,
-        structureName = null,
-        assignedPersonnelName = null,
+        structureName = structureName,
+        assignedPersonnelName = assignedPersonnelName,
         pricePerAmount = pricePerAmount,
         selectedAmount = amount,
         isExpanded = false
@@ -36,6 +36,8 @@ fun ProductListItem.toBoughtProduct(): BoughtProduct {
         name = name,
         label = label,
         pricePerAmount = pricePerAmount,
-        amount = selectedAmount
+        amount = selectedAmount,
+        structureName = structureName,
+        assignedPersonnelName = assignedPersonnelName
     )
 }

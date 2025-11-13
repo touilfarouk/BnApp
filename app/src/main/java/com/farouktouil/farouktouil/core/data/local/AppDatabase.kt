@@ -32,6 +32,7 @@ import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_41_42
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_43_44
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_46_47
 import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_47_48
+import com.farouktouil.farouktouil.core.data.local.migrations.MIGRATION_48_49
 import com.farouktouil.farouktouil.personnel_feature.data.local.dao.RemoteKeysDao
 import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteKey
 
@@ -49,7 +50,7 @@ import com.farouktouil.farouktouil.personnel_feature.data.local.entities.RemoteK
         NewsEntity::class,
         NewsRemoteKey::class
     ],
-    version = 48,
+    version = 49,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -76,7 +77,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_41_42,
                     MIGRATION_43_44,
                     MIGRATION_46_47,
-                    MIGRATION_47_48
+                    MIGRATION_47_48,
+                    MIGRATION_48_49
                 )
                 .fallbackToDestructiveMigration()
                 .createFromAsset("database/initial_data.db") // Optional: If you have initial data

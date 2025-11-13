@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
+import com.farouktouil.farouktouil.order_feature.data.DummyDataSeeder
 import com.farouktouil.farouktouil.order_feature.domain.model.Order
 import com.farouktouil.farouktouil.order_feature.domain.repository.OrderRepository
 import com.farouktouil.farouktouil.order_feature.presentation.mapper.toOrderDetailListItem
@@ -25,7 +26,8 @@ import javax.inject.Inject
 @RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class OrderViewModel @Inject constructor(
-    private val orderRepository: OrderRepository
+    private val orderRepository: OrderRepository,
+    private val dummyDataSeeder: DummyDataSeeder
 ) : ViewModel() {
 
     private var orders: List<Order> = emptyList()
@@ -45,17 +47,22 @@ class OrderViewModel @Inject constructor(
                 .map { selections -> selections.associate { it.productId to it.selectedTypes } }
                 .collectLatest { currentAccessoriesByProduct ->
                     accessoriesByProduct = currentAccessoriesByProduct
-                    refreshOrders()
+                    loadOrders()
                 }
         }
-        viewModelScope.launch {
-            refreshOrders()
-        }
+        refreshOrders()
     }
 
     private var accessoriesByProduct: Map<Int, Set<com.farouktouil.farouktouil.core.domain.model.AccessoryType>> = emptyMap()
 
-    private suspend fun refreshOrders() {
+    fun refreshOrders() {
+        viewModelScope.launch {
+            dummyDataSeeder.seedIfEmpty()
+            loadOrders()
+        }
+    }
+
+    private suspend fun loadOrders() {
         orders = orderRepository.getOrders()
         setupOrderList()
         initOrderForDialog(clickedOrderItem?.orderId)
@@ -64,8 +71,7 @@ class OrderViewModel @Inject constructor(
     fun deleteOrder(orderId: String) {
         viewModelScope.launch {
             orderRepository.deleteOrder(orderId)
-            orders = orderRepository.getOrders() // Refresh order list
-            setupOrderList()
+            loadOrders()
         }
     }
 

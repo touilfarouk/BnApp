@@ -37,16 +37,23 @@ class DataConverterCSV : DataConverter {
         csvWriter.writeNext(HEADER_DATA)
 
         exportDataList.forEach { exportModel ->
-            val productsString = exportModel.products.joinToString(separator = "|") { product ->
-                "${product.name}:${product.label}:${product.amount}:${product.pricePerAmount}"
+            val personnelSummary = exportModel.personnelNames.joinToString(", ")
+
+            val productsString = exportModel.products.joinToString(separator = " | ") { product ->
+                buildString {
+                    append("${product.amount}x ${product.name}")
+                    if (product.label.isNotBlank()) {
+                        append(" — ${product.label}")
+                    }
+                }
             }
 
             csvWriter.writeNext(
                 arrayOf(
-                    exportModel.date,
+                    exportModel.checkoutTime,
                     exportModel.structureName,
-                    exportModel.deliveryTime,
-                    productsString  // ✅ Now formatted properly
+                    personnelSummary,
+                    productsString
                 )
             )
 
@@ -69,6 +76,6 @@ class DataConverterCSV : DataConverter {
 
     companion object {
         const val SEPARATOR = ';'
-        val HEADER_DATA = arrayOf("Date", "Structure Name", "Delivery Time", "Products (Name:Label:Amount:Price)")
+        val HEADER_DATA = arrayOf("Date", "Structure Name", "Checkout Time", "Products (Name:Label:Amount:Price)")
     }
 }

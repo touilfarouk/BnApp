@@ -1,7 +1,6 @@
 package com.farouktouil.farouktouil.order_feature.domain.use_case
 
 import android.annotation.SuppressLint
-import com.farouktouil.farouktouil.core.data.local.ProductDao
 import com.farouktouil.farouktouil.order_feature.domain.model.BoughtProduct
 import com.farouktouil.farouktouil.order_feature.domain.model.Order
 import com.farouktouil.farouktouil.order_feature.domain.repository.OrderRepository
@@ -13,8 +12,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 class ConfirmOrderUseCase @Inject constructor(
-    private val orderRepository: OrderRepository,
-    private val productDao: ProductDao
+    private val orderRepository: OrderRepository
 ) {
 
     @SuppressLint("NewApi")
@@ -29,41 +27,16 @@ class ConfirmOrderUseCase @Inject constructor(
         }
 
         return withContext(Dispatchers.IO) {
-            try {
-                // Check if all products have sufficient stock before creating order
-                for (product in products) {
-                    if (product.productId <= 0) {
-                        throw IllegalArgumentException("Invalid product ID: ${product.productId}")
-                    }
+            val timestamp = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now())
+            val order = Order(
+                orderId = UUID.randomUUID().toString(),
+                date = timestamp,
+                checkoutTime = timestamp,
+                structureName = structureName,
+                products = products
+            )
 
-                    val productEntity = productDao.getProductById(product.productId)
-                        ?: throw IllegalArgumentException("Product not found: ${product.productId}")
-
-                    if (productEntity.quantity < product.amount) {
-                        throw IllegalArgumentException("Insufficient stock for product: ${product.name}. Available: ${productEntity.quantity}, Requested: ${product.amount}")
-                    }
-                }
-
-                // Create and insert the order
-                val order = Order(
-                    orderId = UUID.randomUUID().toString(),
-                    date = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now()),
-                    deliveryTime = "As fast as possible",
-                    structureName = structureName,
-                    products = products
-                )
-
-                orderRepository.insertOrder(order)
-
-                // Subtract quantities from product stock after successful order creation
-                for (product in products) {
-                    productDao.adjustProductQuantity(product.productId, -product.amount)
-                }
-
-            } catch (e: Exception) {
-                // Handle any errors during order creation or stock adjustment
-                throw e
-            }
+            orderRepository.insertOrder(order)
         }
     }
 }

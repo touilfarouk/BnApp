@@ -1,9 +1,11 @@
 package com.farouktouil.farouktouil.order_feature.domain.model
 
 data class BoughtProduct(
-    val productId:Int,
-    val name:String,
+    val productId: Int,
+    val name: String,
     val label: String,
-    val pricePerAmount:Float,
-    val amount:Int
+    val pricePerAmount: Float,
+    val amount: Int,
+    val structureName: String? = null,
+    val assignedPersonnelName: String? = null
 )

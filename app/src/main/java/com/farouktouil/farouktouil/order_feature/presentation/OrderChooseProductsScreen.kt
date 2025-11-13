@@ -33,6 +33,7 @@ import com.farouktouil.farouktouil.R
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import java.io.File
+import kotlinx.coroutines.flow.collectLatest
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +59,14 @@ fun OrderChooseProductsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.orderConfirmed.collectLatest {
+            navController.navigate(ScreenRoutes.AffectationScreen.route) {
+                popUpTo(ScreenRoutes.AffectationScreen.route) { inclusive = true }
+            }
+        }
+    }
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
@@ -190,9 +199,6 @@ fun OrderChooseProductsScreen(
             onDismiss = { viewModel.onDismissCheckoutDialog() },
             onConfirm = {
                 viewModel.onBuy()
-                navController.navigate(ScreenRoutes.AffectationScreen.route) {
-                    popUpTo(ScreenRoutes.AffectationScreen.route) { inclusive = true }
-                }
             },
             onExport = { viewModel.onExportSelection() },
             selectedProducts = selectedProducts,

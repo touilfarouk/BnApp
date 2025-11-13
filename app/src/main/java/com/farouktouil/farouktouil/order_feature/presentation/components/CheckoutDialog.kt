@@ -133,14 +133,6 @@ fun CheckoutDialog(
                                             color = Color.Gray
                                         )
                                     }
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "Total : %.2f DZ".format(it.pricePerAmount * it.selectedAmount),
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 14.sp,
-                                        textAlign = TextAlign.End,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
                                 }
                             }
                         }

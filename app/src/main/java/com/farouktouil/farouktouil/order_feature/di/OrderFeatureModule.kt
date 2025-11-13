@@ -45,10 +45,9 @@ object OrderFeatureModule {
     @Provides
     @Singleton
     fun provideConfirmOrderUseCase(
-        orderRepository: OrderRepository,
-        productDao: ProductDao
+        orderRepository: OrderRepository
     ): ConfirmOrderUseCase {
-        return ConfirmOrderUseCase(orderRepository, productDao)
+        return ConfirmOrderUseCase(orderRepository)
     }
 
 

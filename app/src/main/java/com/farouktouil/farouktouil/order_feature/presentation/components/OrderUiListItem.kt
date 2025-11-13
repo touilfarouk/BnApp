@@ -50,12 +50,14 @@ fun OrderUiListItem(
                     color = primaryLight,
                     fontSize = 20.sp
                 )
-                Text(
-                    "%.2f".format(orderListItem.totalAmount) + " DZ",
-                    fontWeight = FontWeight.Bold,
-                    color = primaryLight,
-                    fontSize = 20.sp
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+                orderListItem.products.forEach { productSummary ->
+                    Text(
+                        productSummary,
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
             }
             Row {
                 // 📂 Toggle Button for ExportScreen
@@ -82,11 +84,13 @@ fun OrderUiListItem(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                orderListItem.orderDate,
-                color = primaryLight,
-                fontSize = 16.sp
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    orderListItem.orderDate,
+                    color = primaryLight,
+                    fontSize = 16.sp
+                )
+            }
         }
 
         // 🎬 Animated Visibility for ExportScreen
