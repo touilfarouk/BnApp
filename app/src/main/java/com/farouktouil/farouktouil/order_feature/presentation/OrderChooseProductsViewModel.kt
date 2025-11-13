@@ -5,25 +5,35 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.farouktouil.farouktouil.core.domain.model.AccessoryType
 import com.farouktouil.farouktouil.core.domain.model.Product
+import com.farouktouil.farouktouil.core.util.Resource
+import com.farouktouil.farouktouil.export_feature.domain.repository.ExportRepository
+import com.farouktouil.farouktouil.order_feature.domain.model.Order
 import com.farouktouil.farouktouil.order_feature.domain.repository.OrderRepository
 import com.farouktouil.farouktouil.order_feature.domain.use_case.ConfirmOrderUseCase
 import com.farouktouil.farouktouil.order_feature.domain.use_case.SortListByNameUseCase
 import com.farouktouil.farouktouil.order_feature.presentation.mapper.toBoughtProduct
 import com.farouktouil.farouktouil.order_feature.presentation.mapper.toProductListItem
+import com.farouktouil.farouktouil.order_feature.presentation.state.AffectationExportState
 import com.farouktouil.farouktouil.order_feature.presentation.state.ProductListItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class OrderChooseProductsViewModel @Inject constructor(
     private val orderRepository: OrderRepository,
     private val sortListByNameUseCase: SortListByNameUseCase,
-    private val confirmOrderUseCase: ConfirmOrderUseCase
+    private val confirmOrderUseCase: ConfirmOrderUseCase,
+    private val exportRepository: ExportRepository
 ) : ViewModel() {
 
     // StateFlow for the list of products
@@ -53,6 +63,14 @@ class OrderChooseProductsViewModel @Inject constructor(
     // StateFlow for selected products
     private val _selectedProducts = MutableStateFlow<List<ProductListItem>>(emptyList())
     val selectedProducts: StateFlow<List<ProductListItem>> = _selectedProducts
+
+    private val _isAllSelected = MutableStateFlow(false)
+    val isAllSelected: StateFlow<Boolean> = _isAllSelected
+
+    private val _exportState = MutableStateFlow(AffectationExportState())
+    val exportState: StateFlow<AffectationExportState> = _exportState
+
+    private var exportJob: Job? = null
 
     // Current structure name
     private var structureName: String = ""
@@ -84,6 +102,8 @@ class OrderChooseProductsViewModel @Inject constructor(
                     this@OrderChooseProductsViewModel.structureName = structureName
                     setupProductsToShow()
                     _isLoading.value = false
+                    _isAllSelected.value = false
+                    _selectedProducts.value = emptyList()
                 }
         }
     }
@@ -154,6 +174,7 @@ class OrderChooseProductsViewModel @Inject constructor(
                 accessories = accessories
             )
         }
+        updateSelectAllState()
     }
 
     // Handle list item click (expand/collapse)
@@ -197,6 +218,7 @@ class OrderChooseProductsViewModel @Inject constructor(
             currentSelectedProducts.addAll(updatedSelectedProducts)
         }
         _selectedProducts.value = currentSelectedProducts
+        updateSelectAllState()
     }
 
     // Handle minus button click (decrease selected amount)
@@ -258,6 +280,7 @@ class OrderChooseProductsViewModel @Inject constructor(
                 }
                 _isCheckoutDialogShown.value = false
                 _errorMessage.value = null
+                _isAllSelected.value = false
             } catch (e: IllegalArgumentException) {
                 _errorMessage.value = e.message
                 _isCheckoutDialogShown.value = false
@@ -272,7 +295,130 @@ class OrderChooseProductsViewModel @Inject constructor(
         _errorMessage.value = null
     }
 
+    fun onExportSelection() {
+        val currentSelection = _selectedProducts.value
+        if (currentSelection.isEmpty()) {
+            _exportState.value = AffectationExportState(
+                errorMessage = "Aucun produit sélectionné pour l'export."
+            )
+            return
+        }
+
+        _exportState.value = AffectationExportState(
+            isExporting = true,
+            progressPercentage = 0
+        )
+
+        exportJob?.cancel()
+
+        val exportProducts = currentSelection.map { item ->
+            val accessoriesSummary = if (item.accessories.isNotEmpty()) {
+                item.accessories.joinToString(
+                    separator = ", "
+                ) { type ->
+                    type.name.lowercase(Locale.getDefault())
+                        .replaceFirstChar { it.titlecase(Locale.getDefault()) }
+                }
+            } else null
+
+            val enrichedLabelParts = mutableListOf<String>()
+            if (item.label.isNotBlank()) {
+                enrichedLabelParts += item.label
+            }
+            item.structureName?.let { enrichedLabelParts += "Structure : $it" }
+            item.assignedPersonnelName?.let { enrichedLabelParts += "Personnel : $it" }
+            accessoriesSummary?.let { enrichedLabelParts += "Accessoires : $it" }
+
+            val enrichedLabel = enrichedLabelParts.joinToString(separator = " | ")
+
+            val base = item.toBoughtProduct()
+            base.copy(label = if (enrichedLabel.isBlank()) base.label else enrichedLabel)
+        }
+
+        val exportOrder = Order(
+            orderId = UUID.randomUUID().toString(),
+            date = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault()).format(Date()),
+            structureName = structureName,
+            deliveryTime = currentSelection.firstOrNull()?.assignedPersonnelName ?: "",
+            products = exportProducts
+        )
+
+        exportJob = viewModelScope.launch {
+            exportRepository.startExportData(listOf(exportOrder)).collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _exportState.update { state ->
+                            state.copy(
+                                isExporting = true,
+                                progressPercentage = result.data?.progressPercentage ?: state.progressPercentage
+                            )
+                        }
+                    }
+
+                    is Resource.Success -> {
+                        val path = result.data.path
+                        if (path != null) {
+                            _exportState.value = AffectationExportState(
+                                isExporting = false,
+                                progressPercentage = 100,
+                                exportFilePath = path,
+                                isShareRequested = true
+                            )
+                        } else {
+                            _exportState.value = AffectationExportState(
+                                isExporting = false,
+                                errorMessage = "Impossible de générer le fichier d'export."
+                            )
+                        }
+                    }
+
+                    is Resource.Error -> {
+                        _exportState.value = AffectationExportState(
+                            isExporting = false,
+                            errorMessage = result.errorMessage ?: "Erreur inconnue lors de l'export."
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun onSelectAllToggle(selectAll: Boolean) {
+        if (_productsToShow.value.isEmpty()) {
+            _isAllSelected.value = false
+            return
+        }
+
+        if (selectAll) {
+            val updatedList = _productsToShow.value.map { item ->
+                if (item.selectedAmount > 0) item else item.copy(selectedAmount = 1)
+            }
+            _productsToShow.value = updatedList
+            _selectedProducts.value = updatedList.filter { it.selectedAmount > 0 }
+        } else {
+            _productsToShow.update { currentList ->
+                currentList.map { it.copy(selectedAmount = 0) }
+            }
+            _selectedProducts.value = emptyList()
+        }
+
+        updateSelectAllState()
+    }
+
+    fun consumeExportError() {
+        _exportState.update { it.copy(errorMessage = null) }
+    }
+
+    fun onExportShareHandled() {
+        _exportState.update { it.copy(isShareRequested = false) }
+    }
+
     private fun getIndexOfProduct(productId: Int): Int {
         return _productsToShow.value.indexOfFirst { it.id == productId }
+    }
+
+    private fun updateSelectAllState() {
+        val currentList = _productsToShow.value
+        _isAllSelected.value = currentList.isNotEmpty() && currentList.all { it.selectedAmount > 0 }
     }
 }

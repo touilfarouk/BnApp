@@ -1,6 +1,7 @@
 package com.farouktouil.farouktouil.order_feature.presentation
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +30,9 @@ import com.farouktouil.farouktouil.order_feature.presentation.components.Checkou
 import com.farouktouil.farouktouil.order_feature.presentation.components.ProductUiListItem
 import com.farouktouil.farouktouil.ui.theme.primaryContainerLight
 import com.farouktouil.farouktouil.R
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,14 +52,49 @@ fun OrderChooseProductsScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val isCheckoutDialogShown by viewModel.isCheckoutDialogShown.collectAsStateWithLifecycle()
     val selectedProducts by viewModel.selectedProducts.collectAsStateWithLifecycle()
+    val exportState by viewModel.exportState.collectAsStateWithLifecycle()
+    val isAllSelected by viewModel.isAllSelected.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
             viewModel.consumeErrorMessage()
+        }
+    }
+
+    LaunchedEffect(exportState.errorMessage) {
+        exportState.errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.consumeExportError()
+        }
+    }
+
+    LaunchedEffect(exportState.isShareRequested, exportState.exportFilePath) {
+        if (exportState.isShareRequested) {
+            exportState.exportFilePath?.let { path ->
+                val file = File(path)
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    context.applicationContext.packageName + ".provider",
+                    file
+                )
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/csv"
+                    putExtra(Intent.EXTRA_SUBJECT, "Affectations exportées")
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                ContextCompat.startActivity(
+                    context,
+                    Intent.createChooser(shareIntent, "Partager"),
+                    null
+                )
+            }
+            viewModel.onExportShareHandled()
         }
     }
 
@@ -105,6 +145,20 @@ fun OrderChooseProductsScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Checkbox(
+                    checked = isAllSelected,
+                    onCheckedChange = { checked -> viewModel.onSelectAllToggle(checked) }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Sélectionner tout")
+            }
+
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.padding(top = 20.dp)
@@ -140,7 +194,10 @@ fun OrderChooseProductsScreen(
                     popUpTo(ScreenRoutes.AffectationScreen.route) { inclusive = true }
                 }
             },
-            selectedProducts = selectedProducts
+            onExport = { viewModel.onExportSelection() },
+            selectedProducts = selectedProducts,
+            isExporting = exportState.isExporting,
+            exportProgress = exportState.progressPercentage
         )
     }
 }
