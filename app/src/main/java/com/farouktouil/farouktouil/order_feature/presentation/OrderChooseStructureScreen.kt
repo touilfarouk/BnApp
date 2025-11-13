@@ -123,7 +123,7 @@ fun OrderChooseStructureScreen(
                             .clickable {
                                 val encodedName = Uri.encode(structureItem.name)
                                 navController.navigate(
-                                    ScreenRoutes.OrderChooseProductsScreen.route + "/$encodedName"
+                                    ScreenRoutes.OrderChooseProductsScreen.route + "?structureName=$encodedName"
                                 )
                             },
                         shape = MaterialTheme.shapes.medium,

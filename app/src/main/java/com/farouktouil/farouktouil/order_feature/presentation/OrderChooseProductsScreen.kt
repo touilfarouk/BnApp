@@ -48,7 +48,18 @@ fun OrderChooseProductsScreen(
     val isCheckoutDialogShown by viewModel.isCheckoutDialogShown.collectAsStateWithLifecycle()
     val selectedProducts by viewModel.selectedProducts.collectAsStateWithLifecycle()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.consumeErrorMessage()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Section des produits") },
@@ -125,8 +136,8 @@ fun OrderChooseProductsScreen(
             onDismiss = { viewModel.onDismissCheckoutDialog() },
             onConfirm = {
                 viewModel.onBuy()
-                navController.navigate(ScreenRoutes.OrderScreen.route) {
-                    popUpTo(0)
+                navController.navigate(ScreenRoutes.AffectationScreen.route) {
+                    popUpTo(ScreenRoutes.AffectationScreen.route) { inclusive = true }
                 }
             },
             selectedProducts = selectedProducts

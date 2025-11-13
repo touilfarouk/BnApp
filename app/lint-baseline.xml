@@ -770,7 +770,7 @@
     <issue
         id="MissingTranslation"
         message="&quot;nav_orders&quot; is not translated in &quot;fr&quot; (French)"
-        errorLine1="    &lt;string name=&quot;nav_orders&quot;>Commandes&lt;/string>"
+        errorLine1="    &lt;string name=&quot;nav_orders&quot;>Affectations&lt;/string>"
         errorLine2="            ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"

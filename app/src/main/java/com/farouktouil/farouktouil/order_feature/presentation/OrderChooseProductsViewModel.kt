@@ -63,7 +63,8 @@ class OrderChooseProductsViewModel @Inject constructor(
         viewModelScope.launch {
             orderRepository.observeProductAccessories()
                 .collect { selections ->
-                    accessorySelections.value = selections.associate { it.productId to it.selectedTypes }
+                    accessorySelections.value =
+                        selections.associate { it.productId to it.selectedTypes }
                     setupProductsToShow()
                 }
         }
@@ -76,6 +77,7 @@ class OrderChooseProductsViewModel @Inject constructor(
             orderRepository.getProductsForStructure(structureName)
                 .catch { e ->
                     _errorMessage.value = "Error fetching products: ${e.message}"
+                    _isLoading.value = false
                 }
                 .collect { productList ->
                     _products.value = productList
@@ -138,7 +140,9 @@ class OrderChooseProductsViewModel @Inject constructor(
         val previousItems = _productsToShow.value.associateBy { it.id }
         _productsToShow.value = sortedProducts.mapNotNull { product ->
             val productId = product.productId ?: return@mapNotNull null
-            val accessories = accessorySelections.value[productId] ?: previousItems[productId]?.accessories ?: emptySet()
+            val accessories =
+                accessorySelections.value[productId] ?: previousItems[productId]?.accessories
+                ?: emptySet()
             val selectedItem = _selectedProducts.value.firstOrNull { it.id == productId }
             val baseItem = if (selectedItem != null) {
                 product.toProductListItem().copy(selectedAmount = selectedItem.selectedAmount)
@@ -227,11 +231,6 @@ class OrderChooseProductsViewModel @Inject constructor(
         _selectedProducts.value = currentSelectedProducts
     }
 
-    // Get the index of a product by its ID
-    private fun getIndexOfProduct(productId: Int): Int {
-        return _productsToShow.value.indexOfFirst { it.id == productId }
-    }
-
     // Show the checkout dialog
     fun onCheckoutClick() {
         _isCheckoutDialogShown.value = true
@@ -245,10 +244,35 @@ class OrderChooseProductsViewModel @Inject constructor(
     // Confirm the order
     fun onBuy() {
         viewModelScope.launch {
-            confirmOrderUseCase(
-                _selectedProducts.value.map { it.toBoughtProduct() },
-                structureName = structureName
-            )
+            try {
+                confirmOrderUseCase(
+                    _selectedProducts.value.map { it.toBoughtProduct() },
+                    structureName = structureName
+                )
+
+                _selectedProducts.value = emptyList()
+                _productsToShow.update { currentList ->
+                    currentList.map { item ->
+                        item.copy(selectedAmount = 0)
+                    }
+                }
+                _isCheckoutDialogShown.value = false
+                _errorMessage.value = null
+            } catch (e: IllegalArgumentException) {
+                _errorMessage.value = e.message
+                _isCheckoutDialogShown.value = false
+            } catch (e: Exception) {
+                _errorMessage.value = "Erreur lors de la confirmation : ${e.message}"
+                _isCheckoutDialogShown.value = false
+            }
         }
+    }
+
+    fun consumeErrorMessage() {
+        _errorMessage.value = null
+    }
+
+    private fun getIndexOfProduct(productId: Int): Int {
+        return _productsToShow.value.indexOfFirst { it.id == productId }
     }
 }

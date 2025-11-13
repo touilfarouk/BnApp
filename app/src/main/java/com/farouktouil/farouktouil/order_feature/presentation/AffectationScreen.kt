@@ -43,14 +43,14 @@ import com.farouktouil.farouktouil.R // ← replace with your app's actual packa
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun OrderScreen(
+fun AffectationScreen(
     navController: NavController,
     drawerState: DrawerState,
     scope: CoroutineScope,
-    orderViewModel: OrderViewModel = hiltViewModel()
+    affectationViewModel: OrderViewModel = hiltViewModel()
 ) {
-    fun deleteOrder(orderId: String) {
-        orderViewModel.deleteOrder(orderId)  // Call ViewModel function to delete the order
+    fun deleteAffectation(orderId: String) {
+        affectationViewModel.deleteOrder(orderId)
     }
 
     ModalNavigationDrawer(
@@ -83,7 +83,7 @@ fun OrderScreen(
                 )
             }
         ) { paddingValues ->
-            if (orderViewModel.orderList.isEmpty()) {
+            if (affectationViewModel.orderList.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -108,15 +108,15 @@ fun OrderScreen(
                         .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(orderViewModel.orderList, key = { it.orderId }) {
+                    items(affectationViewModel.orderList, key = { it.orderId }) {
                         OrderUiListItem(
                             orderListItem = it,
-                            onDeleteClick = { deleteOrder(it.orderId) },  // Pass delete function
+                            onDeleteClick = { deleteAffectation(it.orderId) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
                                 .border(1.dp, color = primaryLight, RoundedCornerShape(10.dp))
-                                .clickable { orderViewModel.onOrderClick(it.orderId) }
+                                .clickable { affectationViewModel.onOrderClick(it.orderId) }
                                 .padding(15.dp)
                         )
                     }
@@ -124,10 +124,10 @@ fun OrderScreen(
             }
         }
 
-        if (orderViewModel.isOrderDialogShown && orderViewModel.clickedOrderItem != null) {
+        if (affectationViewModel.isOrderDialogShown && affectationViewModel.clickedOrderItem != null) {
             OrderDetailDialog(
-                onDismiss = { orderViewModel.onDismissOrderDialog() },
-                orderDetailListItem = orderViewModel.clickedOrderItem!!
+                onDismiss = { affectationViewModel.onDismissOrderDialog() },
+                orderDetailListItem = affectationViewModel.clickedOrderItem!!
             )
         }
     }

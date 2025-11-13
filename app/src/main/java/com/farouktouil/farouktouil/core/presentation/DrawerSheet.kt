@@ -88,8 +88,8 @@ fun DrawerSheet(navController: NavController, drawerState: DrawerState, scope: C
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate(ScreenRoutes.OrderScreen.route) {
-                            popUpTo(ScreenRoutes.OrderScreen.route) { inclusive = true }
+                        navController.navigate(ScreenRoutes.AffectationScreen.route) {
+                            popUpTo(ScreenRoutes.AffectationScreen.route) { inclusive = true }
                         }
                     },
                     modifier = Modifier.padding(vertical = 8.dp)

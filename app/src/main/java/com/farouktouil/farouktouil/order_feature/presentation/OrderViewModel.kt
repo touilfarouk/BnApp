@@ -14,6 +14,8 @@ import com.farouktouil.farouktouil.order_feature.presentation.mapper.toOrderDeta
 import com.farouktouil.farouktouil.order_feature.presentation.mapper.toOrderListItem
 import com.farouktouil.farouktouil.order_feature.presentation.state.OrderDetailListItem
 import com.farouktouil.farouktouil.order_feature.presentation.state.OrderListItem
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -39,27 +41,24 @@ class OrderViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-           orders = orderRepository.getOrders() // Ensure orders are fetched
-            setupOrderList()
-
-            // Insert test order
-           /*orderRepository.insertOrder(
-                Order(
-                    orderId = "sample-order",
-                    date = "2022.10.15 12:05:12",
-                    deliveryTime = "As fast as possible",
-                    structureName = "Direction Générale",
-                    products = listOf(
-                        BoughtProduct(
-                            productId = 1,
-                            name = "Notebook",
-                            pricePerAmount = 1.23f,
-                            amount = 2
-                        )
-                    )
-                )
-            )*/
+            orderRepository.observeProductAccessories()
+                .map { selections -> selections.associate { it.productId to it.selectedTypes } }
+                .collectLatest { currentAccessoriesByProduct ->
+                    accessoriesByProduct = currentAccessoriesByProduct
+                    refreshOrders()
+                }
         }
+        viewModelScope.launch {
+            refreshOrders()
+        }
+    }
+
+    private var accessoriesByProduct: Map<Int, Set<com.farouktouil.farouktouil.core.domain.model.AccessoryType>> = emptyMap()
+
+    private suspend fun refreshOrders() {
+        orders = orderRepository.getOrders()
+        setupOrderList()
+        initOrderForDialog(clickedOrderItem?.orderId)
     }
 
     fun deleteOrder(orderId: String) {
@@ -76,8 +75,12 @@ class OrderViewModel @Inject constructor(
         isOrderDialogShown = true
     }
 
-    private fun initOrderForDialog(orderId: String) {
-        clickedOrderItem = orders.firstOrNull { it.orderId == orderId.toString() }?.toOrderDetailListItem()
+    private fun initOrderForDialog(orderId: String?) {
+        if (orderId == null) {
+            clickedOrderItem = null
+            return
+        }
+        clickedOrderItem = orders.firstOrNull { it.orderId == orderId }?.toOrderDetailListItem()
     }
 
     fun onDismissOrderDialog() {

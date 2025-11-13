@@ -15,9 +15,9 @@ import androidx.navigation.navArgument
 import com.farouktouil.farouktouil.barcode_feature.presentation.BarcodeGeneratorScreen
 import com.farouktouil.farouktouil.consultation_feature.presentation.ConsultationScreen
 import com.farouktouil.farouktouil.news_feature.presentation.NewsScreen
+import com.farouktouil.farouktouil.order_feature.presentation.AffectationScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseProductsScreen
 import com.farouktouil.farouktouil.order_feature.presentation.OrderChooseStructureScreen
-import com.farouktouil.farouktouil.order_feature.presentation.OrderScreen
 import com.farouktouil.farouktouil.personnel_feature.presentation.PersonnelScreen
 import com.farouktouil.farouktouil.product_feature.presentation.BarcodeScannerScreen
 import com.farouktouil.farouktouil.product_feature.presentation.ScanProductScreen
@@ -40,10 +40,10 @@ fun Navigation() {
     ) {
         NavHost(
             navController,
-            startDestination = ScreenRoutes.OrderScreen.route
+            startDestination = ScreenRoutes.AffectationScreen.route
         ) {
-            composable(ScreenRoutes.OrderScreen.route) {
-                OrderScreen(navController = navController, drawerState = drawerState, scope = scope)
+            composable(ScreenRoutes.AffectationScreen.route) {
+                AffectationScreen(navController = navController, drawerState = drawerState, scope = scope)
             }
             composable(ScreenRoutes.ProductScreen.route) {
                 ProductScreen(
@@ -71,7 +71,15 @@ fun Navigation() {
             composable(ScreenRoutes.OrderChooseStructureScreen.route) {
                 OrderChooseStructureScreen(navController = navController)
             }
-            composable(ScreenRoutes.OrderChooseProductsScreen.route + "/{structureName}") { backStackEntry ->
+            composable(
+                ScreenRoutes.OrderChooseProductsScreen.route + "?structureName={structureName}",
+                arguments = listOf(
+                    navArgument("structureName") {
+                        type = NavType.StringType
+                        nullable = true
+                    }
+                )
+            ) { backStackEntry ->
                 val structureName = backStackEntry.arguments?.getString("structureName")
                 OrderChooseProductsScreen(
                     navController = navController,
@@ -156,8 +164,8 @@ fun Navigation() {
     }
 }
 
-sealed class ScreenRoutes(val route:String){
-    object OrderScreen:ScreenRoutes("order_screen")
+sealed class ScreenRoutes(val route: String) {
+    object AffectationScreen : ScreenRoutes("affectation_screen")
     object OrderChooseStructureScreen:ScreenRoutes("order_choose_structure_screen")
     object OrderChooseProductsScreen:ScreenRoutes("order_choose_products_screen")
     object ProductScreen:ScreenRoutes("product_screen")
