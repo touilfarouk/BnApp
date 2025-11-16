@@ -41,9 +41,11 @@ fun OrderUiListItem(
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     orderListItem.structureName,
                     fontWeight = FontWeight.Bold,
@@ -59,7 +61,10 @@ fun OrderUiListItem(
                     )
                 }
             }
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 // 📂 Toggle Button for ExportScreen
                 IconButton(onClick = { isExportVisible = !isExportVisible }) {
                     Icon(

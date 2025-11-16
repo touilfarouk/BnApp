@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -105,6 +106,14 @@ fun AffectationScreen(
                     )
                 }
             } else {
+                val cardGradient = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFB9FF6C),
+                        Color(0xFFE5FF8C),
+                        Color(0xFFA6FFAF)
+                    )
+                )
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -119,6 +128,7 @@ fun AffectationScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
+                                .background(cardGradient)
                                 .border(1.dp, color = primaryLight, RoundedCornerShape(10.dp))
                                 .clickable { affectationViewModel.onOrderClick(it.orderId) }
                                 .padding(15.dp)
