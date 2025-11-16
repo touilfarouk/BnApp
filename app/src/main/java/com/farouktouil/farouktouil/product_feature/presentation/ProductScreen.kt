@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.QrCodeScanner
@@ -290,21 +291,27 @@ fun ProductScreen(
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(uiState.data) { product ->
+                        var isMenuExpanded by remember { mutableStateOf(false) }
+
+                        val openEditor: () -> Unit = {
+                            editingProduct.value = product
+                            name.value = product.name
+                            label.value = product.label
+                            selectedStructure.value = product.structureName
+                            selectedAccessories.value = emptySet()
+                            selectedPersonnel.value = resolvePersonnel(product)
+                            coroutineScope.launch {
+                                selectedAccessories.value = productViewModel.getAccessoriesForProduct(product.productId)
+                            }
+                            isAddingProduct.value = true
+                        }
+
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp)
                                 .clickable {
-                                    editingProduct.value = product
-                                    name.value = product.name
-                                    label.value = product.label
-                                    selectedStructure.value = product.structureName
-                                    selectedAccessories.value = emptySet()
-                                    selectedPersonnel.value = resolvePersonnel(product)
-                                    coroutineScope.launch {
-                                        selectedAccessories.value = productViewModel.getAccessoriesForProduct(product.productId)
-                                    }
-                                    isAddingProduct.value = true
+                                    openEditor()
                                 },
                         ) {
                             Row(
@@ -328,30 +335,46 @@ fun ProductScreen(
                                         )
                                     }
                                 }
-                                IconButton(onClick = {
-                                    editingProduct.value = product
-                                    name.value = product.name
-                                    label.value = product.label
-                                    selectedStructure.value = product.structureName
-                                    selectedAccessories.value = emptySet()
-                                    selectedPersonnel.value = resolvePersonnel(product)
-                                    coroutineScope.launch {
-                                        selectedAccessories.value = productViewModel.getAccessoriesForProduct(product.productId)
+                                Box {
+                                    IconButton(onClick = { isMenuExpanded = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = "More Options"
+                                        )
                                     }
-                                    isAddingProduct.value = true
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit",
-                                        tint = primaryContainerLight
-                                    )
-                                }
-                                IconButton(onClick = { productViewModel.delete(product) }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete",
-                                        tint = errorLight
-                                    )
+                                    DropdownMenu(
+                                        expanded = isMenuExpanded,
+                                        onDismissRequest = { isMenuExpanded = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("Modifier") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Default.Edit,
+                                                    contentDescription = null,
+                                                    tint = primaryContainerLight
+                                                )
+                                            },
+                                            onClick = {
+                                                isMenuExpanded = false
+                                                openEditor()
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Supprimer", color = errorLight) },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Default.Delete,
+                                                    contentDescription = null,
+                                                    tint = errorLight
+                                                )
+                                            },
+                                            onClick = {
+                                                isMenuExpanded = false
+                                                productViewModel.delete(product)
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
