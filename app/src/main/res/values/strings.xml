@@ -13,7 +13,7 @@
     <!-- Tiroir de navigation -->
     <string name="nav_orders">Affectation</string>
     <string name="nav_deliverers">Structures</string>
-    <string name="nav_products">Matériels et équipements</string>
+    <string name="nav_products">Ajout de Matériels</string>
     <string name="nav_contact">Contact</string>
     <string name="nav_personnel">Personnel BNEDER</string>
     <string name="nav_appel_consultation">Appel à consultation</string>
@@ -22,8 +22,8 @@
     <string name="app_version">BnederApp v1.0</string>
 
     <!-- Écran des Matériels et équipementss -->
-    <string name="products">Matériels et équipements</string>
-    <string name="product_name">Nom du Matériels et équipements</string>
+    <string name="products">Ajout de Matériels</string>
+    <string name="product_name">Nom de Matériels</string>
     <string name="product_price">Prix par unité</string>
     <string name="deliverer">Structure</string>
     <string name="select_deliverer">Sélectionner une Structure</string>

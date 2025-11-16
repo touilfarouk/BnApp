@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.farouktouil.farouktouil.core.data.local.ProductDao
 import com.farouktouil.farouktouil.core.data.local.entities.ProductEntity
 import com.farouktouil.farouktouil.core.domain.model.Product
+import com.farouktouil.farouktouil.core.domain.model.AccessoryType
 import com.farouktouil.farouktouil.product_feature.domain.useCase.DeleteProductUseCase
 import com.farouktouil.farouktouil.product_feature.domain.useCase.GetAllProductsUseCase
 import com.farouktouil.farouktouil.product_feature.domain.useCase.GetProductsForStructureUseCase
 import com.farouktouil.farouktouil.product_feature.domain.useCase.InsertProductUseCase
 import com.farouktouil.farouktouil.product_feature.domain.useCase.UpdateProductUseCase
+import com.farouktouil.farouktouil.product_feature.domain.useCase.GetProductAccessoriesUseCase
 import com.farouktouil.farouktouil.product_feature.presentation.state.PersonnelListItem
 import com.farouktouil.farouktouil.personnel_feature.domain.use_case.GetPersonnelDirectoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,7 +34,8 @@ class ProductViewModel @Inject constructor(
     private val getAllProductsUseCase: GetAllProductsUseCase,
     private val getProductsForStructureUseCase: GetProductsForStructureUseCase,
     private val productDao: ProductDao,
-    private val getPersonnelDirectoryUseCase: GetPersonnelDirectoryUseCase
+    private val getPersonnelDirectoryUseCase: GetPersonnelDirectoryUseCase,
+    private val getProductAccessoriesUseCase: GetProductAccessoriesUseCase
 ) : ViewModel() {
 
     private val _structures = MutableStateFlow<List<String>>(emptyList())
@@ -135,8 +138,8 @@ class ProductViewModel @Inject constructor(
         _selectedStructure.value = structureName
     }
 
-    fun update(product: Product) = viewModelScope.launch {
-        updateProductUseCase.invoke(product)
+    fun update(product: Product, accessories: Set<AccessoryType>) = viewModelScope.launch {
+        updateProductUseCase.invoke(product, accessories)
     }
 
     fun delete(product: Product) = viewModelScope.launch {
@@ -179,6 +182,7 @@ class ProductViewModel @Inject constructor(
         structureName: String?,
         assignedPersonnelId: Int?,
         assignedPersonnelName: String?,
+        accessories: Set<AccessoryType> = emptySet(),
         barcode: String = ""
     ) = viewModelScope.launch {
         val product = Product(
@@ -193,7 +197,12 @@ class ProductViewModel @Inject constructor(
             assignedPersonnelName = assignedPersonnelName,
             barcode = barcode
         )
-        insertProductUseCase.invoke(product)
+        insertProductUseCase.invoke(product, accessories)
+    }
+
+    suspend fun getAccessoriesForProduct(productId: Int): Set<AccessoryType> {
+        if (productId <= 0) return emptySet()
+        return getProductAccessoriesUseCase(productId)
     }
 
     suspend fun getProductById(productId: Int): ProductEntity? {

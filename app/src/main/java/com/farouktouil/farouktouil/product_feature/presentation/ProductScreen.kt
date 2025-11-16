@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -32,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.farouktouil.farouktouil.core.domain.model.Product
+import com.farouktouil.farouktouil.core.domain.model.AccessoryType
 import com.farouktouil.farouktouil.core.presentation.ScreenRoutes
 import com.farouktouil.farouktouil.ui.theme.errorLight
 import com.farouktouil.farouktouil.ui.theme.primaryContainerLight
@@ -63,7 +66,6 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,6 +73,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import com.farouktouil.farouktouil.product_feature.presentation.state.PersonnelListItem
@@ -100,6 +103,7 @@ fun ProductScreen(
     val minQuantity = remember { mutableStateOf("") }
     val maxQuantity = remember { mutableStateOf("") }
     val selectedStructure = remember { mutableStateOf<String?>(null) }
+    val selectedAccessories = remember { mutableStateOf(setOf<AccessoryType>()) }
     val structures: List<String> by productViewModel.structures.collectAsStateWithLifecycle()
     val selectedStructureName by productViewModel.selectedStructure.collectAsStateWithLifecycle()
     val personnel: List<PersonnelListItem> by productViewModel.personnel.collectAsStateWithLifecycle()
@@ -107,6 +111,7 @@ fun ProductScreen(
     val personnelError by productViewModel.personnelError.collectAsStateWithLifecycle()
     val selectedPersonnel = remember { mutableStateOf<PersonnelListItem?>(null) }
     var showFilterMenu by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     val resolvePersonnel: (Product) -> PersonnelListItem? = { product ->
         personnel.firstOrNull { item ->
@@ -218,6 +223,7 @@ fun ProductScreen(
                 minQuantity.value = ""
                 maxQuantity.value = ""
                 selectedStructure.value = null
+                selectedAccessories.value = emptySet()
                 selectedPersonnel.value = null
             }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Ajouter Matériels et équipements")
@@ -235,6 +241,7 @@ fun ProductScreen(
                     maxQuantity = maxQuantity,
                     selectedStructure = selectedStructure,
                     selectedPersonnel = selectedPersonnel,
+                    selectedAccessories = selectedAccessories,
                     availableStructures = structures,
                     availablePersonnel = personnel,
                     isPersonnelLoading = isPersonnelLoading,
@@ -247,6 +254,7 @@ fun ProductScreen(
                         val maxQuantityValue = maxQuantity.value.toIntOrNull() ?: 100
 
                         val selectedPersonnelItem = selectedPersonnel.value
+                        val accessoriesSelection = selectedAccessories.value
 
                         if (editingProduct.value != null) {
                             val updatedProduct = editingProduct.value!!.copy(
@@ -260,7 +268,7 @@ fun ProductScreen(
                                 assignedPersonnelId = selectedPersonnelItem?.id,
                                 assignedPersonnelName = selectedPersonnelItem?.fullName
                             )
-                            productViewModel.update(updatedProduct)
+                            productViewModel.update(updatedProduct, accessoriesSelection)
                         } else {
                             productViewModel.insert(
                                 name = name.value,
@@ -271,9 +279,11 @@ fun ProductScreen(
                                 maxQuantity = maxQuantityValue,
                                 structureName = selectedStructure.value,
                                 assignedPersonnelId = selectedPersonnelItem?.id,
-                                assignedPersonnelName = selectedPersonnelItem?.fullName
+                                assignedPersonnelName = selectedPersonnelItem?.fullName,
+                                accessories = accessoriesSelection
                             )
                         }
+                        selectedAccessories.value = emptySet()
                         isAddingProduct.value = false
                     }
                 )
@@ -289,7 +299,11 @@ fun ProductScreen(
                                     name.value = product.name
                                     label.value = product.label
                                     selectedStructure.value = product.structureName
+                                    selectedAccessories.value = emptySet()
                                     selectedPersonnel.value = resolvePersonnel(product)
+                                    coroutineScope.launch {
+                                        selectedAccessories.value = productViewModel.getAccessoriesForProduct(product.productId)
+                                    }
                                     isAddingProduct.value = true
                                 },
                         ) {
@@ -319,7 +333,11 @@ fun ProductScreen(
                                     name.value = product.name
                                     label.value = product.label
                                     selectedStructure.value = product.structureName
+                                    selectedAccessories.value = emptySet()
                                     selectedPersonnel.value = resolvePersonnel(product)
+                                    coroutineScope.launch {
+                                        selectedAccessories.value = productViewModel.getAccessoriesForProduct(product.productId)
+                                    }
                                     isAddingProduct.value = true
                                 }) {
                                     Icon(
@@ -355,6 +373,7 @@ fun ProductForm(
     maxQuantity: MutableState<String>,
     selectedStructure: MutableState<String?>,
     selectedPersonnel: MutableState<PersonnelListItem?>,
+    selectedAccessories: MutableState<Set<AccessoryType>>,
     availableStructures: List<String>,
     availablePersonnel: List<PersonnelListItem>,
     isPersonnelLoading: Boolean,
@@ -363,6 +382,7 @@ fun ProductForm(
     onSave: () -> Unit
 ) {
     val context = LocalContext.current
+    val accessoryGroups = remember { AccessoryType.values().toList().chunked(3) }
 
     // Barcode scanning launcher setup
     val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
@@ -414,6 +434,47 @@ fun ProductForm(
             label = { Text("Labelle du Matériels ou équipements ") },
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Accessoires",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            accessoryGroups.forEach { rowTypes ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    rowTypes.forEach { accessoryType ->
+                        val isSelected = accessoryType in selectedAccessories.value
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = { checked ->
+                                    selectedAccessories.value = if (checked) {
+                                        selectedAccessories.value + accessoryType
+                                    } else {
+                                        selectedAccessories.value - accessoryType
+                                    }
+                                }
+                            )
+                            Text(text = stringResource(id = accessoryType.labelRes))
+                        }
+                    }
+                    repeat(3 - rowTypes.size) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(8.dp))
 
         // OutlinedTextField(
