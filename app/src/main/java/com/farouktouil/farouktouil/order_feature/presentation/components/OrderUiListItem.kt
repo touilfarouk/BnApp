@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Share
 
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -78,6 +79,13 @@ fun OrderUiListItem(
                 ) {
                     DropdownMenuItem(
                         text = { Text("Exporter") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = null,
+                                tint = primaryLight
+                            )
+                        },
                         onClick = {
                             isExportVisible = !isExportVisible
                             isMenuExpanded = false

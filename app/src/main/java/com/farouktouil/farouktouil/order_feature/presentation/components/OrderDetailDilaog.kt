@@ -55,28 +55,28 @@ fun OrderDetailDialog(
             ){
                 Column {
                     Text(
-                        "Commandé pour ${orderDetailListItem.structureName}",
-                        fontSize = 25.sp,
+                        "Fiche Affectation ${orderDetailListItem.structureName}",
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
-                        "Heure de retrait : ${orderDetailListItem.checkoutTime}",
+                        "Date et heure de l'affectation : ${orderDetailListItem.checkoutTime}",
                         fontSize = 14.sp,
                         textAlign = TextAlign.Start,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 4.dp)
                     )
-                    Text(
-                        orderDetailListItem.orderDate,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                    )
+                    // Text(
+                    //     orderDetailListItem.orderDate,
+                    //     fontSize = 14.sp,
+                    //     textAlign = TextAlign.Start,
+                    //     modifier = Modifier
+                    //         .fillMaxWidth()
+                    //         .padding(top = 5.dp)
+                    // )
                     Divider(modifier = Modifier.padding(top=10.dp))
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(15.dp),
