@@ -3,6 +3,9 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">bneder.dz</domain>
     </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain>105.96.71.114</domain>
+    </domain-config>
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system"/>

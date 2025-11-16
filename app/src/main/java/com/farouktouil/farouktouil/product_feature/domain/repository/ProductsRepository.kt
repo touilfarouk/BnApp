@@ -12,4 +12,6 @@ interface ProductsRepository {
     fun getProductsForStructure(structureName: String): Flow<List<Product>>
     suspend fun upsertAccessories(productId: Int, accessories: Set<AccessoryType>)
     suspend fun getAccessories(productId: Int): Set<AccessoryType>
+    suspend fun pushProductToRemote(product: Product, accessories: Set<AccessoryType>)
+    suspend fun getProductById(productId: Int): Product?
 }

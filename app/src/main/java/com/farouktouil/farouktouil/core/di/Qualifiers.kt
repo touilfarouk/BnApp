@@ -17,3 +17,7 @@ annotation class ConsultationApi
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class NewsApi
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class InventoryApi

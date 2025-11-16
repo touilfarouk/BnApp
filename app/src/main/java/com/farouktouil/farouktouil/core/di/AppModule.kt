@@ -4,6 +4,8 @@ import com.farouktouil.farouktouil.consultation_feature.data.remote.Consultation
 import com.farouktouil.farouktouil.core.di.ConsultationApi
 import com.farouktouil.farouktouil.core.di.NewsApi
 import com.farouktouil.farouktouil.core.di.PersonnelApi
+import com.farouktouil.farouktouil.core.di.InventoryApi
+import com.farouktouil.farouktouil.product_feature.data.remote.InventoryApiService
 import com.farouktouil.farouktouil.news_feature.data.remote.NewsApiService
 import com.farouktouil.farouktouil.personnel_feature.data.remote.PersonnelApiService
 import dagger.Module
@@ -108,5 +110,35 @@ object AppModule {
     @Singleton
     fun provideNewsApiService(@NewsApi newsRetrofit: Retrofit): NewsApiService {
         return newsRetrofit.create(NewsApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    @InventoryApi
+    fun provideInventoryOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BASIC
+                }
+            )
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @InventoryApi
+    fun provideInventoryRetrofit(@InventoryApi okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("http://105.96.71.114/orderapi/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideInventoryApiService(@InventoryApi inventoryRetrofit: Retrofit): InventoryApiService {
+        return inventoryRetrofit.create(InventoryApiService::class.java)
     }
 }

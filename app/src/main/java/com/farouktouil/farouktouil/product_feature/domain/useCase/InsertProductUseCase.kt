@@ -6,12 +6,19 @@ import com.farouktouil.farouktouil.product_feature.domain.repository.ProductsRep
 import javax.inject.Inject
 
 class InsertProductUseCase @Inject constructor(private val productRepository: ProductsRepository) {
-   suspend operator fun invoke(
-       product: Product,
-       accessories: Set<AccessoryType>
-   ): Int {
-       val productId = productRepository.insert(product)
-       productRepository.upsertAccessories(productId, accessories)
-       return productId
-   }
+    suspend operator fun invoke(
+        product: Product,
+        accessories: Set<AccessoryType>
+    ): Int {
+        val productId = productRepository.insert(product)
+        productRepository.upsertAccessories(productId, accessories)
+
+        // Fire-and-forget remote sync; failures are logged inside repository implementation.
+        productRepository.pushProductToRemote(
+            product.copy(productId = productId),
+            accessories
+        )
+
+        return productId
+    }
 }
