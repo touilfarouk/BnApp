@@ -113,6 +113,11 @@ fun ProductScreen(
     val personnelError by productViewModel.personnelError.collectAsStateWithLifecycle()
     val selectedPersonnel = remember { mutableStateOf<PersonnelListItem?>(null) }
     val productSearchQuery = remember { mutableStateOf("") }
+    var structureFilterSelection by remember { mutableStateOf<String?>(null) }
+    var personnelFilterSelection by remember { mutableStateOf<PersonnelListItem?>(null) }
+    var inlineFiltersExpanded by remember { mutableStateOf(true) }
+    var structureFilterMenuExpanded by remember { mutableStateOf(false) }
+    var personnelFilterMenuExpanded by remember { mutableStateOf(false) }
     var showFilterMenu by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -298,34 +303,164 @@ fun ProductScreen(
                         .padding(horizontal = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedTextField(
-                        value = productSearchQuery.value,
-                        onValueChange = { productSearchQuery.value = it },
-                        label = { Text("Rechercher un matériel") },
-                        singleLine = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = null
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
-                    )
+                    ElevatedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Recherche & filtres",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                TextButton(onClick = { inlineFiltersExpanded = !inlineFiltersExpanded }) {
+                                    Text(if (inlineFiltersExpanded) "Masquer" else "Afficher")
+                                }
+                            }
+                            if (inlineFiltersExpanded) {
+                                OutlinedTextField(
+                                    value = productSearchQuery.value,
+                                    onValueChange = { productSearchQuery.value = it },
+                                    label = { Text("Rechercher un matériel") },
+                                    singleLine = true,
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Search,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                ExposedDropdownMenuBox(
+                                    expanded = structureFilterMenuExpanded,
+                                    onExpandedChange = { structureFilterMenuExpanded = !structureFilterMenuExpanded }
+                                ) {
+                                    OutlinedTextField(
+                                        modifier = Modifier
+                                            .menuAnchor()
+                                            .fillMaxWidth(),
+                                        value = structureFilterSelection ?: "",
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        label = { Text("Structure") },
+                                        placeholder = { Text("Toutes les structures") },
+                                        trailingIcon = {
+                                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = structureFilterMenuExpanded)
+                                        }
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = structureFilterMenuExpanded,
+                                        onDismissRequest = { structureFilterMenuExpanded = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("Toutes les structures") },
+                                            onClick = {
+                                                structureFilterSelection = null
+                                                structureFilterMenuExpanded = false
+                                            }
+                                        )
+                                        structures.forEach { structure ->
+                                            DropdownMenuItem(
+                                                text = { Text(structure) },
+                                                onClick = {
+                                                    structureFilterSelection = structure
+                                                    structureFilterMenuExpanded = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                                ExposedDropdownMenuBox(
+                                    expanded = personnelFilterMenuExpanded,
+                                    onExpandedChange = {
+                                        if (personnel.isNotEmpty()) {
+                                            personnelFilterMenuExpanded = !personnelFilterMenuExpanded
+                                        }
+                                    }
+                                ) {
+                                    OutlinedTextField(
+                                        modifier = Modifier
+                                            .menuAnchor()
+                                            .fillMaxWidth(),
+                                        value = personnelFilterSelection?.fullName ?: "",
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        enabled = personnel.isNotEmpty(),
+                                        label = { Text("Personnel") },
+                                        placeholder = { Text("Tous les personnels") },
+                                        trailingIcon = {
+                                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = personnelFilterMenuExpanded)
+                                        }
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = personnelFilterMenuExpanded,
+                                        onDismissRequest = { personnelFilterMenuExpanded = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("Tous les personnels") },
+                                            onClick = {
+                                                personnelFilterSelection = null
+                                                personnelFilterMenuExpanded = false
+                                            }
+                                        )
+                                        personnel
+                                            .distinctBy { it.id ?: it.fullName }
+                                            .forEach { item ->
+                                                DropdownMenuItem(
+                                                    text = { Text(item.fullName) },
+                                                    onClick = {
+                                                        personnelFilterSelection = item
+                                                        personnelFilterMenuExpanded = false
+                                                    }
+                                                )
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                    }
 
-                    val filteredProducts = remember(productSearchQuery.value, uiState.data) {
+                    val filteredProducts = remember(
+                        productSearchQuery.value,
+                        structureFilterSelection,
+                        personnelFilterSelection,
+                        uiState.data
+                    ) {
                         val query = productSearchQuery.value.trim().lowercase()
-                        if (query.isEmpty()) {
-                            uiState.data
-                        } else {
-                            uiState.data.filter { product ->
+                        val structureFilter = structureFilterSelection
+                        val personnelFilter = personnelFilterSelection
+
+                        uiState.data.filter { product ->
+                            val matchesQuery = if (query.isEmpty()) {
+                                true
+                            } else {
                                 val nameMatch = product.name.contains(query, ignoreCase = true)
                                 val labelMatch = product.label.contains(query, ignoreCase = true)
                                 val structureMatch = product.structureName?.contains(query, ignoreCase = true) ?: false
                                 val personnelMatch = product.assignedPersonnelName?.contains(query, ignoreCase = true) ?: false
                                 nameMatch || labelMatch || structureMatch || personnelMatch
                             }
+
+                            val matchesStructure = structureFilter?.let { filter ->
+                                product.structureName?.equals(filter, ignoreCase = true) ?: false
+                            } ?: true
+
+                            val matchesPersonnel = personnelFilter?.let { filter ->
+                                val matchesId = filter.id != null && product.assignedPersonnelId == filter.id
+                                val matchesName = product.assignedPersonnelName?.equals(filter.fullName, ignoreCase = true) == true
+                                matchesId || matchesName
+                            } ?: true
+
+                            matchesQuery && matchesStructure && matchesPersonnel
                         }
                     }
 
