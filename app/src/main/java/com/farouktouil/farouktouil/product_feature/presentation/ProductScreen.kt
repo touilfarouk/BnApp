@@ -136,7 +136,7 @@ fun ProductScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                  modifier = Modifier.height(196.dp), // ✅ increase height (default is ~64.dp)
+                  modifier = Modifier.height(64.dp), // ✅ increase height (default is ~64.dp)
                 title = {
                       Column {
                         Text(stringResource(id = R.string.products))
@@ -365,6 +365,7 @@ fun ProductScreen(
                                             text = { Text("Toutes les structures") },
                                             onClick = {
                                                 structureFilterSelection = null
+                                                personnelFilterSelection = null
                                                 structureFilterMenuExpanded = false
                                             }
                                         )
@@ -373,16 +374,27 @@ fun ProductScreen(
                                                 text = { Text(structure) },
                                                 onClick = {
                                                     structureFilterSelection = structure
+                                                    personnelFilterSelection = null
                                                     structureFilterMenuExpanded = false
                                                 }
                                             )
                                         }
                                     }
                                 }
+                                val personnelFilterOptions = remember(structureFilterSelection, personnel) {
+                                    val base = if (structureFilterSelection.isNullOrBlank()) {
+                                        personnel
+                                    } else {
+                                        personnel.filter {
+                                            it.structureName?.equals(structureFilterSelection, ignoreCase = true) == true
+                                        }
+                                    }
+                                    base.distinctBy { it.id ?: it.fullName }
+                                }
                                 ExposedDropdownMenuBox(
                                     expanded = personnelFilterMenuExpanded,
                                     onExpandedChange = {
-                                        if (personnel.isNotEmpty()) {
+                                        if (personnelFilterOptions.isNotEmpty()) {
                                             personnelFilterMenuExpanded = !personnelFilterMenuExpanded
                                         }
                                     }
@@ -394,7 +406,7 @@ fun ProductScreen(
                                         value = personnelFilterSelection?.fullName ?: "",
                                         onValueChange = {},
                                         readOnly = true,
-                                        enabled = personnel.isNotEmpty(),
+                                        enabled = personnelFilterOptions.isNotEmpty(),
                                         label = { Text("Personnel") },
                                         placeholder = { Text("Tous les personnels") },
                                         trailingIcon = {
@@ -412,17 +424,15 @@ fun ProductScreen(
                                                 personnelFilterMenuExpanded = false
                                             }
                                         )
-                                        personnel
-                                            .distinctBy { it.id ?: it.fullName }
-                                            .forEach { item ->
-                                                DropdownMenuItem(
-                                                    text = { Text(item.fullName) },
-                                                    onClick = {
-                                                        personnelFilterSelection = item
-                                                        personnelFilterMenuExpanded = false
-                                                    }
-                                                )
-                                            }
+                                        personnelFilterOptions.forEach { item ->
+                                            DropdownMenuItem(
+                                                text = { Text(item.fullName) },
+                                                onClick = {
+                                                    personnelFilterSelection = item
+                                                    personnelFilterMenuExpanded = false
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
