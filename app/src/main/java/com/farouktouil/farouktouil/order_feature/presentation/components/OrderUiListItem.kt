@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -32,6 +34,7 @@ fun OrderUiListItem(
     modifier: Modifier = Modifier
 ) {
     var isExportVisible by remember { mutableStateOf(false) } // State to toggle ExportScreen visibility
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier,
@@ -61,25 +64,38 @@ fun OrderUiListItem(
                     )
                 }
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                // 📂 Toggle Button for ExportScreen
-                IconButton(onClick = { isExportVisible = !isExportVisible }) {
+            Box {
+                IconButton(onClick = { isMenuExpanded = true }) {
                     Icon(
-                        imageVector = Icons.Default.MoreVert, // Three-dot menu icon
+                        imageVector = Icons.Default.MoreVert,
                         contentDescription = "More Options",
                         tint = Color.Gray
                     )
                 }
-
-                // 🗑️ Delete Icon aligned to the right
-                IconButton(onClick = onDeleteClick) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete Order",
-                        tint = Color.Red
+                DropdownMenu(
+                    expanded = isMenuExpanded,
+                    onDismissRequest = { isMenuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Exporter") },
+                        onClick = {
+                            isExportVisible = !isExportVisible
+                            isMenuExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Supprimer", color = Color.Red) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = Color.Red
+                            )
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            onDeleteClick()
+                        }
                     )
                 }
             }
