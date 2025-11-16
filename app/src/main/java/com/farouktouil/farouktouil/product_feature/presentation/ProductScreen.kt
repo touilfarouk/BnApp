@@ -18,10 +18,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DrawerState
@@ -111,6 +112,7 @@ fun ProductScreen(
     val isPersonnelLoading by productViewModel.isPersonnelLoading.collectAsStateWithLifecycle()
     val personnelError by productViewModel.personnelError.collectAsStateWithLifecycle()
     val selectedPersonnel = remember { mutableStateOf<PersonnelListItem?>(null) }
+    val productSearchQuery = remember { mutableStateOf("") }
     var showFilterMenu by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -284,96 +286,133 @@ fun ProductScreen(
                                 accessories = accessoriesSelection
                             )
                         }
+
                         selectedAccessories.value = emptySet()
                         isAddingProduct.value = false
                     }
                 )
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(uiState.data) { product ->
-                        var isMenuExpanded by remember { mutableStateOf(false) }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = productSearchQuery.value,
+                        onValueChange = { productSearchQuery.value = it },
+                        label = { Text("Rechercher un matériel") },
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    )
 
-                        val openEditor: () -> Unit = {
-                            editingProduct.value = product
-                            name.value = product.name
-                            label.value = product.label
-                            selectedStructure.value = product.structureName
-                            selectedAccessories.value = emptySet()
-                            selectedPersonnel.value = resolvePersonnel(product)
-                            coroutineScope.launch {
-                                selectedAccessories.value = productViewModel.getAccessoriesForProduct(product.productId)
+                    val filteredProducts = remember(productSearchQuery.value, uiState.data) {
+                        val query = productSearchQuery.value.trim().lowercase()
+                        if (query.isEmpty()) {
+                            uiState.data
+                        } else {
+                            uiState.data.filter { product ->
+                                val nameMatch = product.name.contains(query, ignoreCase = true)
+                                val labelMatch = product.label.contains(query, ignoreCase = true)
+                                val structureMatch = product.structureName?.contains(query, ignoreCase = true) ?: false
+                                val personnelMatch = product.assignedPersonnelName?.contains(query, ignoreCase = true) ?: false
+                                nameMatch || labelMatch || structureMatch || personnelMatch
                             }
-                            isAddingProduct.value = true
                         }
+                    }
 
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                                .clickable {
-                                    openEditor()
-                                },
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = product.name)
-                                    if (product.label.isNotEmpty()) {
-                                        Text(text = product.label, style = MaterialTheme.typography.bodySmall)
-                                    }
-                                    product.structureName?.let { structure ->
-                                        Text(text = stringResource(id = R.string.filtered_by_structure, structure))
-                                    }
-                                    product.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { assignee ->
-                                        Text(
-                                            text = "Affecté à : $assignee",
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(filteredProducts, key = { it.productId }) { product ->
+                            var isMenuExpanded by remember { mutableStateOf(false) }
+
+                            val openEditor: () -> Unit = {
+                                editingProduct.value = product
+                                name.value = product.name
+                                label.value = product.label
+                                selectedStructure.value = product.structureName
+                                selectedAccessories.value = emptySet()
+                                selectedPersonnel.value = resolvePersonnel(product)
+                                coroutineScope.launch {
+                                    selectedAccessories.value = productViewModel.getAccessoriesForProduct(product.productId)
                                 }
-                                Box {
-                                    IconButton(onClick = { isMenuExpanded = true }) {
-                                        Icon(
-                                            imageVector = Icons.Default.MoreVert,
-                                            contentDescription = "More Options"
-                                        )
+                                isAddingProduct.value = true
+                            }
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .clickable { openEditor() }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(text = product.name)
+                                        if (product.label.isNotEmpty()) {
+                                            Text(text = product.label, style = MaterialTheme.typography.bodySmall)
+                                        }
+                                        product.structureName?.let { structure ->
+                                            Text(text = stringResource(id = R.string.filtered_by_structure, structure))
+                                        }
+                                        product.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { assignee ->
+                                            Text(
+                                                text = "Affecté à : $assignee",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
                                     }
-                                    DropdownMenu(
-                                        expanded = isMenuExpanded,
-                                        onDismissRequest = { isMenuExpanded = false }
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = { Text("Modifier") },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Default.Edit,
-                                                    contentDescription = null,
-                                                    tint = primaryContainerLight
-                                                )
-                                            },
-                                            onClick = {
-                                                isMenuExpanded = false
-                                                openEditor()
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text("Supprimer", color = errorLight) },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Default.Delete,
-                                                    contentDescription = null,
-                                                    tint = errorLight
-                                                )
-                                            },
-                                            onClick = {
-                                                isMenuExpanded = false
-                                                productViewModel.delete(product)
-                                            }
-                                        )
+                                    Box {
+                                        IconButton(onClick = { isMenuExpanded = true }) {
+                                            Icon(
+                                                imageVector = Icons.Default.MoreVert,
+                                                contentDescription = "More Options"
+                                            )
+                                        }
+                                        DropdownMenu(
+                                            expanded = isMenuExpanded,
+                                            onDismissRequest = { isMenuExpanded = false }
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = { Text("Modifier") },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Edit,
+                                                        contentDescription = null,
+                                                        tint = primaryContainerLight
+                                                    )
+                                                },
+                                                onClick = {
+                                                    isMenuExpanded = false
+                                                    openEditor()
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                text = { Text("Supprimer", color = errorLight) },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Delete,
+                                                        contentDescription = null,
+                                                        tint = errorLight
+                                                    )
+                                                },
+                                                onClick = {
+                                                    isMenuExpanded = false
+                                                    productViewModel.delete(product)
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
