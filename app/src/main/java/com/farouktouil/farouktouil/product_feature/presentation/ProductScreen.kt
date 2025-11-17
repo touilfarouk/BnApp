@@ -59,6 +59,7 @@ import com.farouktouil.farouktouil.core.domain.model.AccessoryType
 import com.farouktouil.farouktouil.core.presentation.ScreenRoutes
 import com.farouktouil.farouktouil.ui.theme.errorLight
 import com.farouktouil.farouktouil.ui.theme.primaryContainerLight
+import com.farouktouil.farouktouil.ui.theme.primaryLight
 import com.journeyapps.barcodescanner.CaptureActivity
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
@@ -495,7 +496,10 @@ fun ProductScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp)
-                                    .clickable { openEditor() }
+                                    .clickable { openEditor() },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = primaryLight.copy(alpha = 0.12f)
+                                )
                             ) {
                                 Row(
                                     modifier = Modifier

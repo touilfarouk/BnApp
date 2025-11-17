@@ -83,7 +83,7 @@ fun BarcodeGeneratorScreen(
         if (isGranted) {
             showScanner = true
         } else {
-            Toast.makeText(context, "Camera permission is required to scan barcodes", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.camera_permission_required), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -127,7 +127,7 @@ fun BarcodeGeneratorScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Scan Product for Details",
+                        text = stringResource(R.string.scan_product_for_details),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -144,14 +144,14 @@ fun BarcodeGeneratorScreen(
                     ) {
                         Icon(imageVector = Icons.Default.QrCodeScanner, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Scan Product Barcode")
+                        Text(stringResource(R.string.scan_product_barcode))
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (scannedProduct != null) {
                         Text(
-                            text = "Scanned: $scannedProduct",
+                            text = stringResource(R.string.scanned, scannedProduct!!),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -221,17 +221,33 @@ fun BarcodeGeneratorScreen(
                                             barcodeText = ""
                                             productName = ""
                                             quantity = "1"
-                                            Toast.makeText(context, context.getString(R.string.barcode_generated), Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.barcode_generated),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         } else {
-                                            Toast.makeText(context, context.getString(R.string.failed_to_generate), Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.failed_to_generate),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
                                         isGenerating = false
                                     }
                                 } else {
-                                    Toast.makeText(context, context.getString(R.string.quantity_must_be_greater_than_zero), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.quantity_must_be_greater_than_zero),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             } else {
-                                Toast.makeText(context, context.getString(R.string.please_fill_all_fields), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.please_fill_all_fields),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -285,7 +301,7 @@ fun BarcodeGeneratorScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Image(
                                     bitmap = item.bitmap.asImageBitmap(),
-                                    contentDescription = "Barcode",
+                                    contentDescription = stringResource(R.string.barcode_image),
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(80.dp)
@@ -343,9 +359,9 @@ fun BarcodeGeneratorScreen(
                                     scope.launch {
                                         val product = productViewModel.getProductByBarcode(it.text)
                                         if (product != null) {
-                                            Toast.makeText(ctx, "Product: ${product.name}", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(ctx, ctx.getString(R.string.product_found, product.name), Toast.LENGTH_SHORT).show()
                                         } else {
-                                            Toast.makeText(ctx, "Product not found", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(ctx, ctx.getString(R.string.product_not_found), Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 }
@@ -356,7 +372,7 @@ fun BarcodeGeneratorScreen(
                 }
             )
             Button(onClick = { showScanner = false }) {
-                Text("Close Scanner")
+                Text(stringResource(R.string.close_scanner))
             }
         }
     }

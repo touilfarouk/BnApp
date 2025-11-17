@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" x-data="dashboard()" x-init="init()">
+<html lang="fr" x-data="dashboard()" x-init="init()">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrderApp &mdash; Products Dashboard</title>
+    <title>OrderApp &mdash; Tableau du matériels</title>
 
     <!-- Tailwind config + CDN -->
     <script>
@@ -32,106 +32,189 @@
     </style>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
-    <!-- Mobile overlay -->
-    <div x-show="isSideMenuOpen" x-transition.opacity class="fixed inset-0 z-30 bg-black/50 md:hidden" @click="isSideMenuOpen = false"></div>
-
-    <!-- Sidebar -->
-    <aside class="fixed inset-y-0 left-0 z-40 w-64 transform border-r border-gray-200 bg-white shadow-lg transition-transform duration-200 dark:border-gray-800 dark:bg-gray-800 md:translate-x-0"
-        :class="isSideMenuOpen ? 'translate-x-0' : '-translate-x-full'" @click.away="isSideMenuOpen = false">
-        <div class="flex items-center justify-between border-b border-gray-200 px-4 py-4 dark:border-gray-700">
-            <span class="text-lg font-bold">Bneder Informatique</span>
-            <button class="md:hidden" @click="isSideMenuOpen = false">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <nav class="px-4 py-4 text-sm space-y-1">
-            <template x-for="item in navItems" :key="item.href">
-                <a :href="item.href"
-                   class="block rounded px-3 py-2 leading-tight text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-700">{{ item.label }}</a>
-            </template>
-        </nav>
-    </aside>
-
-    <!-- Top header -->
-    <header class="fixed inset-x-0 top-0 z-20 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow md:ml-64 dark:border-gray-800 dark:bg-gray-800">
-        <div class="flex items-center gap-3">
-            <button class="md:hidden rounded p-2 hover:bg-gray-200 dark:hover:bg-gray-700" @click="isSideMenuOpen = !isSideMenuOpen">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
-            <div class="hidden text-lg font-semibold md:block">Products Dashboard</div>
-        </div>
-        <div class="flex flex-1 justify-center px-4">
-            <input type="search" placeholder="Search..."
-                class="w-full max-w-md rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100" />
-        </div>
-        <div class="flex items-center gap-3">
-            <button class="rounded p-2 hover:bg-gray-200 dark:hover:bg-gray-700" @click="toggleDark()">
-                <template x-if="!dark">
-                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
-                    </svg>
-                </template>
-                <template x-if="dark">
-                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                    </svg>
-                </template>
-            </button>
-        </div>
-    </header>
-
-    <!-- Main content -->
-    <main class="md:ml-64 pt-24 md:pt-24 min-h-screen overflow-y-auto bg-gray-50 px-6 pb-12 transition-colors duration-300 dark:bg-gray-900">
-        <div class="mx-auto max-w-6xl space-y-8">
-            <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl transition-colors duration-300 dark:border-gray-800 dark:bg-gray-800">
-                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+<body class="min-h-screen bg-slate-200 font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+    <div class="flex h-screen w-full overflow-hidden">
+        <aside class="hidden lg:flex w-72 flex-col border-r border-slate-300 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-900/60">
+            <div class="flex h-full flex-col">
+                <div class="flex items-center gap-3 border-b border-slate-300 px-6 py-5 dark:border-slate-800">
+                    <div class="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-sky-500 to-emerald-500 text-sm font-semibold text-white shadow-lg">OA</div>
                     <div>
-                        <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Remote Products</h1>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Live snapshot from <code class="rounded bg-gray-100 px-1 text-xs dark:bg-gray-700">GET /orderapi/get-all-products.php</code></p>
+                        <p class="text-base font-semibold text-slate-800 dark:text-slate-100">OrderApp Bureau</p>
+                        <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Console</p>
                     </div>
+                </div>
+                <nav class="flex-1 overflow-y-auto px-5 py-6">
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.4em] text-slate-400">Navigation</p>
+                    <div class="mt-4 space-y-1">
+                        <template x-for="item in navItems" :key="item.href">
+                            <a :href="item.href"
+                               class="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-sky-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white">
+                                <span x-text="item.label"></span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-slate-300">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        </template>
+                    </div>
+                </nav>
+                <div class="border-t border-slate-300 px-6 py-4 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-400">
+                    <p class="font-medium">Serveur</p>
+                    <p class="mt-1 flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-emerald-600 dark:text-emerald-400">
+                        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                        En ligne
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex flex-1 flex-col bg-slate-100/70 backdrop-blur dark:bg-slate-900/70">
+            <div class="flex items-center justify-between border-b border-slate-300 bg-slate-50/80 px-6 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                <div class="flex items-center gap-4">
                     <div class="flex items-center gap-3">
-                        <span id="productCount" class="text-sm font-medium text-gray-500 dark:text-gray-400">Loading…</span>
-                        <button id="refreshButton" class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 font-medium text-white shadow hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.75a7.5 7.5 0 0112.864-3.864m2.636 4.614a7.5 7.5 0 01-12.864 3.864M2.25 9.75h2.25m-2.25 0V7.5m19.5 6.75h-2.25m2.25 0v2.25" />
+                        <div class="flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-800 dark:text-slate-100">
+                            <span class="flex h-3 w-3 items-center justify-center gap-1">
+                                <span class="h-3 w-3 rounded-full bg-rose-500"></span>
+                                <span class="h-3 w-3 rounded-full bg-amber-400"></span>
+                                <span class="h-3 w-3 rounded-full bg-emerald-500"></span>
+                            </span>
+                            Tableau du matériels
+                        </div>
+                        <span class="hidden rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold tracking-wide text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 xl:inline-flex">Bneder Informatique</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
+                        <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+                        Synchronisé
+                    </div>
+                    <button class="rounded-full border border-slate-300 bg-white p-2 text-slate-500 shadow-sm transition hover:border-sky-500 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-400 dark:hover:text-sky-300" @click="toggleDark()">
+                        <template x-if="!dark">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
                             </svg>
-                            Refresh
-                        </button>
+                        </template>
+                        <template x-if="dark">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                            </svg>
+                        </template>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between border-b border-slate-300 bg-white/60 px-6 py-2 text-sm shadow-inner dark:border-slate-800 dark:bg-slate-900/60">
+                <div class="flex items-center gap-6 text-xs font-semibold uppercase tracking-[0.4em] text-slate-500 dark:text-slate-400">
+                    <span class="cursor-default rounded px-2 py-1 hover:bg-slate-200/70 dark:hover:bg-slate-800/80">Fichier</span>
+                    <span class="cursor-default rounded px-2 py-1 hover:bg-slate-200/70 dark:hover:bg-slate-800/80">Edition</span>
+                    <span class="cursor-default rounded px-2 py-1 hover:bg-slate-200/70 dark:hover:bg-slate-800/80">Affichage</span>
+                    <span class="cursor-default rounded px-2 py-1 hover:bg-slate-200/70 dark:hover:bg-slate-800/80">Outils</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="hidden items-center gap-2 rounded border border-slate-300 bg-white px-3 py-1 text-xs text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 lg:inline-flex">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-12a1 1 0 00-.894.553l-2 4A1 1 0 008 12h4a1 1 0 00.894-1.447l-2-4A1 1 0 0010 6z" clip-rule="evenodd" />
+                        </svg>
+                        Temps réel
                     </div>
+                    <button id="refreshButton" class="inline-flex items-center gap-2 rounded-md border border-sky-500 bg-sky-500/90 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-white dark:border-sky-400 dark:bg-sky-500 dark:hover:bg-sky-400 dark:focus:ring-offset-slate-900">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.75a7.5 7.5 0 0112.864-3.864m2.636 4.614a7.5 7.5 0 01-12.864 3.864M2.25 9.75h2.25m-2.25 0V7.5m19.5 6.75h-2.25m2.25 0v2.25" />
+                        </svg>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-1 overflow-hidden">
+                <div class="flex-1 overflow-y-auto px-6 py-6">
+                    <section class="h-full rounded-2xl border border-slate-300 bg-white/90 shadow-[0_25px_50px_-20px_rgba(15,23,42,0.45)] transition dark:border-slate-800 dark:bg-slate-900/80">
+                        <div class="border-b border-slate-200 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/70">
+                            <h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Inventaire des matériels distants</h1>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Données fournies par <code class="rounded bg-slate-100 px-1 text-[11px] uppercase tracking-[0.3em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">GET /orderapi/get-all-products.php</code></p>
+                        </div>
+
+                        <div class="space-y-6 px-6 py-6">
+                            <div class="rounded-xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
+                                <p class="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500 dark:text-slate-400">Filtres rapides</p>
+                                <div class="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                                    <div class="flex flex-col gap-1">
+                                        <label for="filterName" class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Nom</label>
+                                        <input id="filterName" type="search" placeholder="Filtrer par nom" autocomplete="off"
+                                            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-inner focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <label for="filterLabel" class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Libellé</label>
+                                        <input id="filterLabel" type="search" placeholder="Filtrer par libellé" autocomplete="off"
+                                            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-inner focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <label for="filterStructure" class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Structure</label>
+                                        <input id="filterStructure" type="search" placeholder="Filtrer par structure" autocomplete="off"
+                                            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-inner focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <label for="filterPersonnel" class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Personnel</label>
+                                        <input id="filterPersonnel" type="search" placeholder="Filtrer par personnel" autocomplete="off"
+                                            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-inner focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <label for="filterAccessories" class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Accessoires</label>
+                                        <input id="filterAccessories" type="search" placeholder="Filtrer par accessoire" autocomplete="off"
+                                            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-inner focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="alertContainer" class="hidden rounded-xl border border-rose-300 bg-rose-100/70 px-4 py-3 text-sm text-rose-700 shadow-sm dark:border-rose-900 dark:bg-rose-900/40 dark:text-rose-200"></div>
+
+                            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white/90 shadow-lg dark:border-slate-800 dark:bg-slate-900/80">
+                                <div class="border-b border-slate-200 bg-slate-100/80 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-400">Liste des matériels</div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
+                                        <thead class="bg-slate-100 text-slate-600 dark:bg-slate-900/90 dark:text-slate-300">
+                                            <tr>
+                                                <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">ID</th>
+                                                <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">NS / Marque</th>
+                                                <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Libellé</th>
+                                                <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Structure</th>
+                                                <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Personnel</th>
+                                                <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Accessoires</th>
+                                                <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Dernière mise à jour</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="productsTableBody" class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900/70"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
-                <div id="alertContainer" class="mt-4 hidden rounded-xl border border-rose-300 bg-rose-100/70 px-4 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-900/40 dark:text-rose-200"></div>
-
-                <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 shadow dark:border-gray-700">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-                            <thead class="bg-gray-100 dark:bg-gray-700 dark:text-gray-200">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">ID</th>
-                                    <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Name</th>
-                                    <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Label</th>
-                                    <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Structure</th>
-                                    <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Personnel</th>
-                                    <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Accessories</th>
-                                    <th scope="col" class="px-4 py-3 text-left font-medium uppercase tracking-wide">Updated</th>
-                                </tr>
-                            </thead>
-                            <tbody id="productsTableBody" class="divide-y divide-gray-100 bg-white dark:divide-gray-700 dark:bg-gray-800"></tbody>
-                        </table>
+                <aside class="hidden xl:flex w-72 flex-col border-l border-slate-300 bg-white/70 px-6 py-6 text-sm shadow-inner dark:border-slate-800 dark:bg-slate-900/60">
+                    <h2 class="text-sm font-semibold uppercase tracking-[0.4em] text-slate-500 dark:text-slate-400">Activité</h2>
+                    <div class="mt-4 space-y-3 text-slate-600 dark:text-slate-300">
+                        <p class="flex items-center gap-2 text-sm"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> Flux synchronisé</p>
+                        <p class="flex items-center gap-2 text-sm"><span class="h-2 w-2 rounded-full bg-sky-500"></span> Surveillance API active</p>
+                        <p class="flex items-center gap-2 text-sm"><span class="h-2 w-2 rounded-full bg-amber-400"></span> Dernière vérification <span class="font-medium">il y a quelques secondes</span></p>
+                        <p class="flex items-center gap-2 text-sm"><span class="h-2 w-2 rounded-full bg-rose-500"></span> Alertes critiques <span class="font-medium">0</span></p>
                     </div>
-                </div>
-            </section>
-        </div>
+                </aside>
+            </div>
 
-        <footer class="mt-8 text-center text-xs text-gray-400 dark:text-gray-500">
-            &copy; <span id="year"></span> OrderApp Remote Dashboard
-        </footer>
-    </main>
+            <div class="border-t border-slate-300 bg-slate-100/80 px-6 py-2 text-xs text-slate-600 shadow-inner dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-400">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                            <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+                            <span id="productCount">Chargement…</span>
+                        </span>
+                        <span class="hidden text-slate-400 dark:text-slate-500 lg:inline">Serveur : <span class="font-medium text-slate-600 dark:text-slate-300">GET /orderapi/get-all-products.php</span></span>
+                    </div>
+                    <span class="text-slate-400 dark:text-slate-500">&copy; <span id="year"></span> OrderApp Bureau</span>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
         const API_BASE = 'http://105.96.71.114/orderapi/get-all-products.php';
@@ -142,9 +225,11 @@
 
             return {
                 dark: initialDark,
-                isSideMenuOpen: false,
                 navItems: [
-                  
+                    { label: 'Inventaire', href: '#' },
+                    { label: 'Personnel', href: '#' },
+                    { label: 'Consultations', href: '#' },
+                    { label: 'Rapports', href: '#' }
                 ],
                 init() {
                     document.documentElement.classList.toggle('dark', this.dark);
@@ -165,13 +250,92 @@
 
         function formatDate(value) {
             if (!value) {
-                return 'N/A';
+                return 'N/D';
             }
             const parsed = new Date(String(value).replace(' ', 'T'));
             if (Number.isNaN(parsed.getTime())) {
                 return value;
             }
-            return parsed.toLocaleString();
+            return parsed.toLocaleString('fr-FR', {
+                dateStyle: 'short',
+                timeStyle: 'medium'
+            });
+        }
+
+        const filters = {
+            name: '',
+            label: '',
+            structure: '',
+            personnel: '',
+            accessories: ''
+        };
+
+        let allProducts = [];
+        let totalProducts = 0;
+
+        function normalizeForSearch(value) {
+            return String(value ?? '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim();
+        }
+
+        function matchesFilter(value, filterValue) {
+            if (!filterValue) {
+                return true;
+            }
+            return normalizeForSearch(value).includes(filterValue);
+        }
+
+        function productMatchesFilters(product) {
+            return matchesFilter(product.name, filters.name)
+                && matchesFilter(product.label, filters.label)
+                && matchesFilter(product.structure_name, filters.structure)
+                && matchesFilter(product.assigned_personnel_name, filters.personnel)
+                && (() => {
+                    if (!filters.accessories) {
+                        return true;
+                    }
+                    if (Array.isArray(product.accessories)) {
+                        const flattened = product.accessories
+                            .map(item => normalizeForSearch(item))
+                            .join(' ');
+                        return flattened.includes(filters.accessories);
+                    }
+                    return matchesFilter(product.accessories, filters.accessories);
+                })();
+        }
+
+        function hasActiveFilters() {
+            return Object.values(filters).some(value => value !== '');
+        }
+
+        function formatProductCount(count) {
+            if (count === 0) {
+                return '0 produit';
+            }
+            if (count === 1) {
+                return '1 produit';
+            }
+            return `${count} produits`;
+        }
+
+        function applyFilters() {
+            const filtered = allProducts.filter(productMatchesFilters);
+            renderProducts(filtered);
+
+            const productCount = document.getElementById('productCount');
+            if (!productCount) {
+                return;
+            }
+
+            if (hasActiveFilters() && totalProducts) {
+                productCount.textContent = `${formatProductCount(filtered.length)} (sur ${formatProductCount(totalProducts)})`;
+            } else {
+                const reference = totalProducts || filtered.length;
+                productCount.textContent = formatProductCount(reference);
+            }
         }
 
         function renderProducts(products) {
@@ -184,7 +348,7 @@
                 const cell = document.createElement('td');
                 cell.colSpan = 7;
                 cell.className = 'px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400';
-                cell.textContent = 'No products found.';
+                cell.textContent = 'Aucun produit trouvé.';
                 row.appendChild(cell);
                 tbody.appendChild(row);
                 return;
@@ -222,7 +386,7 @@
                 } else {
                     const none = document.createElement('span');
                     none.className = 'text-gray-400 dark:text-gray-500';
-                    none.textContent = 'None';
+                    none.textContent = 'Aucun';
                     accessoriesCell.appendChild(none);
                 }
                 row.appendChild(accessoriesCell);
@@ -252,7 +416,7 @@
             const productCount = document.getElementById('productCount');
             refreshButton.disabled = true;
             refreshButton.classList.add('opacity-70');
-            productCount.textContent = 'Loading…';
+            productCount.textContent = 'Chargement…';
 
             try {
                 const response = await fetch(API_BASE, { cache: 'no-store' });
@@ -261,15 +425,18 @@
                 }
                 const payload = await response.json();
                 if (!payload || payload.success !== true) {
-                    throw new Error(payload?.message || 'Unexpected response from server.');
+                    throw new Error(payload?.message || 'Réponse inattendue du serveur.');
                 }
 
-                renderProducts(payload.products);
-                productCount.textContent = `${payload.count ?? payload.products.length} products`;
+                allProducts = Array.isArray(payload.products) ? payload.products : [];
+                totalProducts = payload.count ?? allProducts.length;
+                applyFilters();
             } catch (error) {
-                showAlert(error.message || 'Unable to reach the server. Please try again.');
+                showAlert(error.message || 'Impossible de joindre le serveur. Veuillez réessayer.');
+                allProducts = [];
+                totalProducts = 0;
                 renderProducts([]);
-                productCount.textContent = '0 products';
+                productCount.textContent = '0 produit';
             } finally {
                 refreshButton.disabled = false;
                 refreshButton.classList.remove('opacity-70');
@@ -279,6 +446,26 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('year').textContent = new Date().getFullYear();
             document.getElementById('refreshButton').addEventListener('click', fetchProducts);
+
+            const filterBindings = [
+                ['filterName', 'name'],
+                ['filterLabel', 'label'],
+                ['filterStructure', 'structure'],
+                ['filterPersonnel', 'personnel'],
+                ['filterAccessories', 'accessories']
+            ];
+
+            filterBindings.forEach(([elementId, key]) => {
+                const element = document.getElementById(elementId);
+                if (!element) {
+                    return;
+                }
+                element.addEventListener('input', event => {
+                    filters[key] = normalizeForSearch(event.target.value);
+                    applyFilters();
+                });
+            });
+
             fetchProducts();
         });
     </script>

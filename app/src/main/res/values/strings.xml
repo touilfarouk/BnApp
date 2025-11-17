@@ -11,13 +11,13 @@
     <string name="menu">Menu</string>
 
     <!-- Tiroir de navigation -->
-    <string name="nav_orders">Affectation</string>
+    <string name="nav_orders">Affectations</string>
     <string name="nav_deliverers">Structures</string>
-    <string name="nav_products">Ajout de Matériels</string>
+    <string name="nav_products">Gestion de Matériels</string>
     <string name="nav_contact">Contact</string>
-    <string name="nav_personnel">Personnel BNEDER</string>
+    <string name="nav_personnel">Contacts</string>
     <string name="nav_appel_consultation">Appel à consultation</string>
-    <string name="nav_news">Actualités BNEDER</string>
+    <string name="nav_news">Actualités </string>
     <string name="nav_barcode_generator">Générateur de codes-barres</string>
     <string name="app_version">BnederApp v1.0</string>
 
@@ -81,4 +81,32 @@
     <string name="failed_to_export_pdf">Échec de l’exportation du PDF : %s</string>
     <string name="please_fill_all_fields">Veuillez remplir tous les champs</string>
     <string name="quantity_must_be_greater_than_zero">La quantité doit être supérieure à 0</string>
+
+    <!-- Textes supplémentaires pour l'écran générateur/lecteur de codes-barres -->
+    <string name="camera_permission_required">L’autorisation de la caméra est requise pour scanner les codes-barres</string>
+    <string name="scan_product_for_details">Scanner un Matériel pour afficher les détails</string>
+    <string name="barcode_image">Image du code-barres</string>
+    <string name="product_found">Produit : %s</string>
+    <string name="product_not_found">Produit introuvable</string>
+    <string name="close_scanner">Fermer le scanner</string>
+
+    <!-- Recherche et filtres -->
+    <string name="search_and_filter">Recherche et filtres</string>
+    <string name="show">Afficher</string>
+    <string name="hide">Masquer</string>
+    <string name="search_by_name">Rechercher par nom</string>
+    <string name="search_by_structure">Structure</string>
+    <string name="status">Statut</string>
+    <string name="status_all">Tous</string>
+    <string name="status_active">Actif</string>
+    <string name="status_inactive">Inactif</string>
+    <string name="search_by_date">Rechercher par date</string>
+
+    <!-- Écrans divers -->
+    <string name="personnel_screen_title">Notre Personnel</string>
+    <string name="consultation_screen_title">Appels de Consultation</string>
+    <string name="open_navigation_drawer">Ouvrir le tiroir de navigation</string>
+    <string name="error_generic">Une erreur est survenue</string>
+    <string name="retry">Réessayer</string>
+    <string name="date_unknown">Date inconnue</string>
 </resources>

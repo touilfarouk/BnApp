@@ -10,10 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.farouktouil.farouktouil.R
 import com.farouktouil.farouktouil.personnel_feature.domain.model.Personnel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -55,12 +57,12 @@ fun PersonnelScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notre Personnel") },
+                title = { Text(stringResource(R.string.personnel_screen_title)) },
                 navigationIcon = {
                     IconButton(onClick = { scope.launch { drawerState.open() } }) {
                         Icon(
                             imageVector = Icons.Default.Menu,
-                            contentDescription = "Open navigation drawer"
+                            contentDescription = stringResource(R.string.open_navigation_drawer)
                         )
                     }
                 }
@@ -108,7 +110,7 @@ fun PersonnelScreen(
                             val e = personnel.loadState.refresh as LoadState.Error
                             item {
                                 ErrorItem(
-                                    message = e.error.localizedMessage ?: "An error occurred",
+                                    message = e.error.localizedMessage ?: stringResource(R.string.error_generic),
                                     onRetry = { personnel.retry() }
                                 )
                             }
@@ -117,7 +119,7 @@ fun PersonnelScreen(
                             val e = personnel.loadState.append as LoadState.Error
                             item {
                                 ErrorItem(
-                                    message = e.error.localizedMessage ?: "An error occurred",
+                                    message = e.error.localizedMessage ?: stringResource(R.string.error_generic),
                                     onRetry = { personnel.retry() }
                                 )
                             }
@@ -148,9 +150,11 @@ fun SearchAndFilterCard(state: PersonnelScreenState, onEvent: (PersonnelEvent) -
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Search & Filter", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.search_and_filter), style = MaterialTheme.typography.titleMedium)
                 TextButton(onClick = { expanded = !expanded }) {
-                    Text(if (expanded) "Hide" else "Show")
+                    Text(
+                        if (expanded) stringResource(R.string.hide) else stringResource(R.string.show)
+                    )
                 }
             }
 
@@ -159,7 +163,7 @@ fun SearchAndFilterCard(state: PersonnelScreenState, onEvent: (PersonnelEvent) -
                 OutlinedTextField(
                     value = state.nameQuery,
                     onValueChange = { onEvent(PersonnelEvent.OnNameQueryChange(it)) },
-                    label = { Text("Search by name") },
+                    label = { Text(stringResource(R.string.search_by_name)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -173,7 +177,7 @@ fun SearchAndFilterCard(state: PersonnelScreenState, onEvent: (PersonnelEvent) -
                             .fillMaxWidth(),
                         value = state.structureQuery.takeIf { it.isNotBlank() } ?: "",
                         onValueChange = {},
-                        label = { Text("Structure") },
+                        label = { Text(stringResource(R.string.search_by_structure)) },
                         readOnly = true,
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = structureMenuExpanded)
@@ -186,7 +190,7 @@ fun SearchAndFilterCard(state: PersonnelScreenState, onEvent: (PersonnelEvent) -
                         onDismissRequest = { structureMenuExpanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Toutes les structures") },
+                            text = { Text(stringResource(R.string.all_structures)) },
                             onClick = {
                                 structureMenuExpanded = false
                                 onEvent(PersonnelEvent.OnStructureQueryChange(""))
@@ -204,14 +208,14 @@ fun SearchAndFilterCard(state: PersonnelScreenState, onEvent: (PersonnelEvent) -
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Status", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.status), style = MaterialTheme.typography.titleSmall)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    StatusRadioButton(text = "All", selected = state.activeStatus == null) { onEvent(PersonnelEvent.OnActiveStatusChange(null)) }
-                    StatusRadioButton(text = "Active", selected = state.activeStatus == 1) { onEvent(PersonnelEvent.OnActiveStatusChange(1)) }
-                    StatusRadioButton(text = "Inactive", selected = state.activeStatus == 0) { onEvent(PersonnelEvent.OnActiveStatusChange(0)) }
+                    StatusRadioButton(text = stringResource(R.string.status_all), selected = state.activeStatus == null) { onEvent(PersonnelEvent.OnActiveStatusChange(null)) }
+                    StatusRadioButton(text = stringResource(R.string.status_active), selected = state.activeStatus == 1) { onEvent(PersonnelEvent.OnActiveStatusChange(1)) }
+                    StatusRadioButton(text = stringResource(R.string.status_inactive), selected = state.activeStatus == 0) { onEvent(PersonnelEvent.OnActiveStatusChange(0)) }
                 }
             }
         }
@@ -298,7 +302,7 @@ fun ErrorItem(message: String, onRetry: () -> Unit) {
             Text(text = message, color = MaterialTheme.colorScheme.onError)
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = onRetry) {
-                Text("Retry")
+                Text(stringResource(R.string.retry))
             }
         }
     }

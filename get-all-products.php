@@ -60,11 +60,43 @@ try {
     $stmt->execute($params);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Decode accessories JSON for consumers that expect an array
+    // Decode accessories JSON and translate accessory codes to French labels
+    $accessoryLabels = [
+        'MOUSE' => 'Souris',
+        'KEYBOARD' => 'Clavier',
+        'UPS' => 'Onduleur',
+        'MOUNT' => 'Support',
+        'ETHERNET_CABLE' => 'Câble Ethernet',
+        'PRINTER' => 'Imprimante',
+        'CHAIR' => 'Chaise',
+        'DESK' => 'Bureau',
+        'SCANNER_HEAD' => 'Tête de scanner',
+        'SCANNER' => 'Scanner',
+        'POWER_SUPPLY' => 'Bloc d’alimentation',
+        'MONITOR' => 'Écran',
+        'HEADSET' => 'Casque',
+        'WEBCAM' => 'Webcam',
+        'BARCODE_SCANNER' => 'Lecteur de codes-barres',
+        'LABEL_PRINTER' => 'Imprimante d’étiquettes',
+        'DOCKING_STATION' => 'Station d’accueil',
+    ];
+
     foreach ($products as &$product) {
         if (!empty($product['accessories'])) {
             $decoded = json_decode($product['accessories'], true);
-            $product['accessories'] = is_array($decoded) ? $decoded : [];
+            if (is_array($decoded)) {
+                $product['accessories'] = array_map(function ($code) use ($accessoryLabels) {
+                    $key = strtoupper(str_replace(' ', '_', (string) $code));
+                    if (isset($accessoryLabels[$key])) {
+                        return $accessoryLabels[$key];
+                    }
+
+                    $humanReadable = ucwords(strtolower(str_replace('_', ' ', $key)));
+                    return $humanReadable;
+                }, $decoded);
+            } else {
+                $product['accessories'] = [];
+            }
         } else {
             $product['accessories'] = [];
         }

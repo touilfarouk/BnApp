@@ -121,14 +121,14 @@ fun DrawerSheet(navController: NavController, drawerState: DrawerState, scope: C
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
-                // Personnel
+                // Barcode Generator
                 NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.nav_personnel), style = MaterialTheme.typography.titleMedium) },
+                    label = { Text(stringResource(R.string.nav_barcode_generator), style = MaterialTheme.typography.titleMedium) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate(ScreenRoutes.PersonnelScreen.route) {
-                            popUpTo(ScreenRoutes.PersonnelScreen.route) { inclusive = true }
+                        navController.navigate(ScreenRoutes.BarcodeGeneratorScreen.route) {
+                            popUpTo(ScreenRoutes.BarcodeGeneratorScreen.route) { inclusive = true }
                         }
                     },
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -140,18 +140,7 @@ fun DrawerSheet(navController: NavController, drawerState: DrawerState, scope: C
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
-                // Appel à Consultation
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.nav_appel_consultation), style = MaterialTheme.typography.titleMedium) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate(ScreenRoutes.AppelConsultationScreen.route) {
-                            popUpTo(ScreenRoutes.AppelConsultationScreen.route) { inclusive = true }
-                        }
-                    },
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+
 
                 Divider(
                     color = MaterialTheme.colorScheme.outlineVariant,
@@ -172,24 +161,48 @@ fun DrawerSheet(navController: NavController, drawerState: DrawerState, scope: C
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
+
+
                 Divider(
                     color = MaterialTheme.colorScheme.outlineVariant,
                     thickness = 1.dp,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
-                // Barcode Generator
+                // Appel à Consultation
                 NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.nav_barcode_generator), style = MaterialTheme.typography.titleMedium) },
+                    label = { Text(stringResource(R.string.nav_appel_consultation), style = MaterialTheme.typography.titleMedium) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate(ScreenRoutes.BarcodeGeneratorScreen.route) {
-                            popUpTo(ScreenRoutes.BarcodeGeneratorScreen.route) { inclusive = true }
+                        navController.navigate(ScreenRoutes.AppelConsultationScreen.route) {
+                            popUpTo(ScreenRoutes.AppelConsultationScreen.route) { inclusive = true }
                         }
                     },
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
+
+
+
+
+                Divider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                // Personnel
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.nav_personnel), style = MaterialTheme.typography.titleMedium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(ScreenRoutes.PersonnelScreen.route) {
+                            popUpTo(ScreenRoutes.PersonnelScreen.route) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
             }
         }
 

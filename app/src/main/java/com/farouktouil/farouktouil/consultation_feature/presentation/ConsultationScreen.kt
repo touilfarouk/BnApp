@@ -16,8 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
-import com.farouktouil.farouktouil.core.presentation.components.PdfViewerDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Fingerprint
@@ -26,6 +24,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,6 +35,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.farouktouil.farouktouil.consultation_feature.domain.model.AppelConsultation
 import com.farouktouil.farouktouil.core.util.NetworkUtils
 import com.farouktouil.farouktouil.personnel_feature.presentation.LoadingItem
+import com.farouktouil.farouktouil.core.presentation.components.PdfViewerDialog
+import com.farouktouil.farouktouil.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -52,12 +53,12 @@ fun ConsultationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Appels de Consultation") },
+                title = { Text(stringResource(R.string.consultation_screen_title)) },
                 navigationIcon = {
                     IconButton(onClick = { scope.launch { drawerState.open() } }) {
                         Icon(
                             imageVector = Icons.Default.Menu,
-                            contentDescription = "Open navigation drawer"
+                            contentDescription = stringResource(R.string.open_navigation_drawer)
                         )
                     }
                 }
@@ -108,7 +109,7 @@ fun ConsultationScreen(
                             val e = consultations.loadState.refresh as LoadState.Error
                             item {
                                 ErrorItem(
-                                    message = e.error.localizedMessage ?: "An error occurred",
+                                    message = e.error.localizedMessage ?: stringResource(R.string.error_generic),
                                     onRetry = { consultations.retry() }
                                 )
                             }
@@ -117,7 +118,7 @@ fun ConsultationScreen(
                             val e = consultations.loadState.append as LoadState.Error
                             item {
                                 ErrorItem(
-                                    message = e.error.localizedMessage ?: "An error occurred",
+                                    message = e.error.localizedMessage ?: stringResource(R.string.error_generic),
                                     onRetry = { consultations.retry() }
                                 )
                             }
@@ -132,7 +133,7 @@ fun ConsultationScreen(
 @Composable
 fun ConsultationCard(consultation: AppelConsultation) {
     val title = consultation.title.ifEmpty { "Sans titre" }
-    val date = consultation.depositDate.ifEmpty { "Date inconnue" }
+    val date = consultation.depositDate.ifEmpty { stringResource(R.string.date_unknown) }
     val id = consultation.id
     val documents = consultation.documents
     var selectedDocument by remember { mutableStateOf<AppelConsultation.Document?>(null) }
@@ -315,7 +316,7 @@ fun SearchAndFilterCard(state: ConsultationScreenState, onEvent: (ConsultationEv
             ) {
                 Text("Search & Filter", style = MaterialTheme.typography.titleMedium)
                 TextButton(onClick = { expanded = !expanded }) {
-                    Text(if (expanded) "Hide" else "Show")
+                    Text(if (expanded) stringResource(R.string.hide) else stringResource(R.string.show))
                 }
             }
 
@@ -324,14 +325,14 @@ fun SearchAndFilterCard(state: ConsultationScreenState, onEvent: (ConsultationEv
                 OutlinedTextField(
                     value = state.nomAppelConsultation,
                     onValueChange = { onEvent(ConsultationEvent.OnNomAppelConsultationChanged(it)) },
-                    label = { Text("Search by Name") },
+                    label = { Text(stringResource(R.string.search_by_name)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = state.dateDepot,
                     onValueChange = { onEvent(ConsultationEvent.OnDateDepotChanged(it)) },
-                    label = { Text("Search by Date") },
+                    label = { Text(stringResource(R.string.search_by_date)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
