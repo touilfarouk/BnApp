@@ -18,6 +18,9 @@
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+    <!-- JsBarcode for generating barcode images -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
     <style>
         body {
             overflow-y: hidden;
@@ -367,7 +370,52 @@
                 row.className = 'fade-in';
 
                 makeCell(row, product.id ?? '', 'whitespace-nowrap px-4 py-3 font-medium text-gray-700 dark:text-gray-200');
-                makeCell(row, product.name ?? '', 'whitespace-nowrap px-4 py-3 text-gray-700 dark:text-gray-200');
+
+                const serialValue = product.name ?? '';
+                const nsCell = document.createElement('td');
+                nsCell.className = 'whitespace-nowrap px-4 py-3 text-gray-700 dark:text-gray-200';
+
+                const serialStack = document.createElement('div');
+                serialStack.className = 'flex flex-col gap-2';
+
+                const serialText = document.createElement('span');
+                serialText.className = 'font-medium text-slate-700 dark:text-slate-100';
+                serialText.textContent = serialValue || 'Non renseigné';
+                serialStack.appendChild(serialText);
+
+                if (serialValue) {
+                    const barcodeWrapper = document.createElement('div');
+                    barcodeWrapper.className = 'rounded border border-slate-200 bg-white/80 p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/60';
+
+                    const barcodeSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    barcodeSvg.setAttribute('role', 'img');
+                    barcodeSvg.setAttribute('aria-label', `Code-barres ${serialValue}`);
+                    barcodeSvg.classList.add('h-12', 'w-full', 'max-w-[200px]');
+
+                    barcodeWrapper.appendChild(barcodeSvg);
+                    serialStack.appendChild(barcodeWrapper);
+
+                    if (typeof JsBarcode === 'function') {
+                        try {
+                            JsBarcode(barcodeSvg, serialValue, {
+                                format: 'CODE128',
+                                displayValue: false,
+                                height: 60,
+                                lineColor: '#0f172a',
+                                margin: 0,
+                                background: 'transparent'
+                            });
+                        } catch (error) {
+                            console.warn('Impossible de générer le code-barres pour', serialValue, error);
+                        }
+                    } else {
+                        console.warn('JsBarcode non disponible pour le moment.');
+                    }
+                }
+
+                nsCell.appendChild(serialStack);
+                row.appendChild(nsCell);
+
                 makeCell(row, product.label ?? '', 'px-4 py-3 text-gray-500 dark:text-gray-300');
                 makeCell(row, product.structure_name ?? '', 'px-4 py-3 text-gray-500 dark:text-gray-300');
                 makeCell(row, product.assigned_personnel_name ?? '', 'px-4 py-3 text-gray-500 dark:text-gray-300');
