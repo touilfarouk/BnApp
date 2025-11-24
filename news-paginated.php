@@ -51,17 +51,12 @@ switch ($method) {
                 $countStmt->execute();
                 $totalItems = (int)$countStmt->fetchColumn();
 
-                $sql = "
-                    SELECT
-                        a.rubrique,
-                        a.image_id,
-                        a.titre,
-                        a.titre_ar,
-                        DATE_FORMAT(a.date,'%d/%m/%Y') AS date,
-                        a.cle
+             $sql = "
+                    SELECT a.rubrique, a.image_id, a.titre, a.titre_ar,
+                        DATE_FORMAT(a.date,'%d/%m/%Y') AS date, a.cle
                     $baseSql
                     $whereClause
-                    ORDER BY a.cle DESC
+                    ORDER BY a.date DESC, a.cle DESC
                     LIMIT :offset, :limit
                 ";
 

@@ -18,7 +18,7 @@ interface NewsDao {
             "WHERE (:query = '' OR title LIKE '%' || :query || '%' " +
             "OR rubrique LIKE '%' || :query || '%' " +
             "OR title_ar LIKE '%' || :query || '%') " +
-            "ORDER BY published_date DESC, id DESC"
+            "ORDER BY date(substr(published_date, 7, 4) || '-' || substr(published_date, 4, 2) || '-' || substr(published_date, 1, 2)) DESC, id DESC"
     )
     fun pagingSource(query: String): PagingSource<Int, NewsEntity>
 
@@ -29,6 +29,8 @@ interface NewsDao {
     suspend fun getCount(): Int
 
     @Transaction
-    @Query("SELECT * FROM news_articles ORDER BY published_date DESC, id DESC")
+    @Query(
+        "SELECT * FROM news_articles ORDER BY date(substr(published_date, 7, 4) || '-' || substr(published_date, 4, 2) || '-' || substr(published_date, 1, 2)) DESC, id DESC"
+    )
     suspend fun getAll(): List<NewsEntity>
 }
