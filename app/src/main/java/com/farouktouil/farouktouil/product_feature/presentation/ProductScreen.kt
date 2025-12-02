@@ -31,8 +31,10 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Checkbox
@@ -137,9 +139,9 @@ fun ProductScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                  modifier = Modifier.height(64.dp), // ✅ increase height (default is ~64.dp)
+                modifier = Modifier.height(64.dp), // ✅ increase height (default is ~64.dp)
                 title = {
-                      Column {
+                    Column {
                         Text(stringResource(id = R.string.products))
                         selectedStructureName?.takeIf { it.isNotBlank() }?.let { name ->
                             Text(
@@ -176,13 +178,19 @@ fun ProductScreen(
                 },
                 actions = {
                     // Scan product button
-                    IconButton(onClick = {
-                        navController.navigate(ScreenRoutes.ScanProductScreen.route)
-                    }) {
-                            Icon(
-                                imageVector = Icons.Default.QrCodeScanner,
-                                contentDescription = stringResource(id = R.string.scan_barcode)
-                            )
+                    IconButton(
+                        onClick = {
+                            navController.navigate(ScreenRoutes.ScanProductScreen.route)
+                        },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.QrCodeScanner,
+                            contentDescription = stringResource(id = R.string.scan_barcode)
+                        )
                     }
 
                     // Filter button
@@ -677,7 +685,10 @@ fun ProductForm(
                                     }
                                 }
                             )
-                            Text(text = stringResource(id = accessoryType.labelRes))
+                            Text(
+                                text = stringResource(id = accessoryType.labelRes),
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         }
                     }
                     repeat(3 - rowTypes.size) {
@@ -881,16 +892,34 @@ fun ProductForm(
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-        TextButton(onClick = onRefreshPersonnel) {
-            Text("Actualiser le personnel")
-        }
-
         Spacer(modifier = Modifier.height(8.dp))
-        Button(
-            onClick = onSave
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = "Enregistrer")
+            // Actualiser le personnel button (Orange)
+            Button(
+                onClick = onRefreshPersonnel,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF9800), // Orange color
+                    contentColor = Color.White
+                ),
+                modifier = Modifier.weight(1f).padding(end = 4.dp)
+            ) {
+                Text("Actualiser")
+            }
+
+            // Enregistrer button (Red)
+            Button(
+                onClick = onSave,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFF44336), // Red color
+                    contentColor = Color.White
+                ),
+                modifier = Modifier.weight(1f).padding(start = 4.dp)
+            ) {
+                Text("Enregistrer")
+            }
         }
 
         // Show message if deliverer not selected

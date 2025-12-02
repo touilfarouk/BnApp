@@ -13,6 +13,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -69,7 +70,9 @@ fun AffectationScreen(
                 FloatingActionButton(
                     onClick = {
                         navController.navigate(ScreenRoutes.OrderChooseStructureScreen.route)
-                    }
+                    },
+                    containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                    contentColor = Color.White
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -81,7 +84,13 @@ fun AffectationScreen(
                 TopAppBar(
                     title = { Text("Liste des affectations") },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        IconButton(
+                            onClick = { scope.launch { drawerState.open() } },
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                                contentColor = Color.White
+                            )
+                        ) {
                             Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
                         }
                     }

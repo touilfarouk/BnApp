@@ -5,10 +5,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -59,13 +62,24 @@ fun PersonnelScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.personnel_screen_title)) },
                 navigationIcon = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                    IconButton(
+                        onClick = { scope.launch { drawerState.open() } },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                            contentColor = Color.White
+                        )
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = stringResource(R.string.open_navigation_drawer)
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                )
             )
         }
     ) { paddingValues ->
@@ -288,22 +302,27 @@ fun LoadingItem() {
 
 @Composable
 fun ErrorItem(message: String, onRetry: () -> Unit) {
-    Card(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Text(
+            text = message,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = onRetry,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                contentColor = Color.White
+            )
         ) {
-            Text(text = message, color = MaterialTheme.colorScheme.onError)
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = onRetry) {
-                Text(stringResource(R.string.retry))
-            }
+            Text("Réessayer")
         }
     }
 }

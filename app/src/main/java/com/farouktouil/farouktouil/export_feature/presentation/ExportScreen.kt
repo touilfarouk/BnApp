@@ -16,6 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.IosShare
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -98,11 +102,15 @@ fun ExportScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Sélectionner une structure") },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF1B5E20), // BNEDER primary green
+                        focusedLabelColor = Color(0xFF1B5E20), // BNEDER primary green
+                        cursorColor = Color(0xFF1B5E20) // BNEDER primary green
+                    ),
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
 
                     },
-                    colors = ExposedDropdownMenuDefaults.textFieldColors(),
                     modifier = Modifier.menuAnchor()
                 )
 
@@ -148,23 +156,24 @@ fun ExportScreen(
                 Icon(
                     imageVector = Icons.Default.IosShare, // Export file icon
                     contentDescription = "Export File",
-                    tint = MaterialTheme.colorScheme.primary // Adjust color if needed
+                    tint = Color(0xFF1B5E20) // BNEDER primary green
                 )
             }
 
             AnimatedVisibility(visible = fileExportState.isSharedDataReady) {
-                IconButton(
-                    onClick = {
-                        exportViewModel.onShareDataClick()
-                    }
-                ){
-                    Icon(
-                        imageVector = Icons.Default.ImportExport,
-                        contentDescription = "export",
-                       // tint = orange,
-                        modifier = Modifier
-                            .size(120.dp)
+                Button(
+                    onClick = { 
+                        exportViewModel.generateExportFile()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .padding(vertical = 16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                        contentColor = Color.White
                     )
+                ) {
+                    Text("Export")
                 }
             }
         }

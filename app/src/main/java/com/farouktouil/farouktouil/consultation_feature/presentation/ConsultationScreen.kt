@@ -24,6 +24,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -55,13 +56,24 @@ fun ConsultationScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.consultation_screen_title)) },
                 navigationIcon = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                    IconButton(
+                        onClick = { scope.launch { drawerState.open() } },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                            contentColor = Color.White
+                        )
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = stringResource(R.string.open_navigation_drawer)
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                )
             )
         }
     ) { paddingValues ->
@@ -148,7 +160,13 @@ fun ConsultationCard(consultation: AppelConsultation) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { /* Handle card click if needed */ },
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White,
+            contentColor = Color.Black
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -285,14 +303,26 @@ fun ErrorItem(message: String, onRetry: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = message, color = MaterialTheme.colorScheme.onError)
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
             Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = onRetry) {
-                Text("Retry")
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Réessayer")
             }
         }
     }
