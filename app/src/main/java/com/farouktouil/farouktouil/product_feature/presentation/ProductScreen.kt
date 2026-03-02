@@ -1,6 +1,12 @@
 package com.farouktouil.farouktouil.product_feature.presentation
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,26 +14,41 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
-
-import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -35,55 +56,48 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.ui.res.stringResource
-import com.farouktouil.farouktouil.R
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.farouktouil.farouktouil.core.domain.model.Product
-import com.farouktouil.farouktouil.core.domain.model.AccessoryType
-import com.farouktouil.farouktouil.core.presentation.ScreenRoutes
-import com.farouktouil.farouktouil.ui.theme.errorLight
-import com.farouktouil.farouktouil.ui.theme.primaryContainerLight
-import com.farouktouil.farouktouil.ui.theme.primaryLight
-import com.journeyapps.barcodescanner.CaptureActivity
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanOptions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import com.farouktouil.farouktouil.product_feature.presentation.state.PersonnelListItem
-import androidx.compose.material3.TextButton
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import com.farouktouil.farouktouil.R
+import com.farouktouil.farouktouil.core.domain.model.AccessoryType
+import com.farouktouil.farouktouil.core.domain.model.Product
+import com.farouktouil.farouktouil.core.presentation.ScreenRoutes
+import com.farouktouil.farouktouil.product_feature.presentation.state.PersonnelListItem
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -127,10 +141,10 @@ fun ProductScreen(
     val resolvePersonnel: (Product) -> PersonnelListItem? = { product ->
         personnel.firstOrNull { item ->
             product.assignedPersonnelId != null && item.id == product.assignedPersonnelId
-        } ?: product.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { name ->
+        } ?: product.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { personnelName ->
             PersonnelListItem(
                 id = product.assignedPersonnelId,
-                fullName = name,
+                fullName = personnelName,
                 structureName = product.structureName
             )
         }
@@ -139,51 +153,45 @@ fun ProductScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                modifier = Modifier.height(64.dp), // ✅ increase height (default is ~64.dp)
+                modifier = Modifier.height(64.dp), 
                 title = {
                     Column {
-                        Text(stringResource(id = R.string.products))
+                        Text(
+                            stringResource(id = R.string.products),
+                            color = Color.White
+                        )
                         selectedStructureName?.takeIf { it.isNotBlank() }?.let { name ->
                             Text(
                                 stringResource(id = R.string.filtered_by_structure, name),
-                                style = MaterialTheme.typography.bodySmall
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.8f)
                             )
-                        }
-                        // Inventory Statistics
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-//                            Text(
-//                                stringResource(id = R.string.total_items, uiState.totalInventoryQuantity),
-//                                style = MaterialTheme.typography.bodySmall
-//                            )
-//                            Text(
-//                                stringResource(id = R.string.inventory_value, String.format("%.2f", uiState.totalInventoryValue)),
-//                                style = MaterialTheme.typography.bodySmall
-//                            )
-//                            if (uiState.lowStockCount > 0) {
-//                                Text(
-//                                    stringResource(id = R.string.low_stock, uiState.lowStockCount),
-//                                    style = MaterialTheme.typography.bodySmall,
-//                                    color = Color.Red
-//                                )
-//                            }
                         }
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                    IconButton(
+                        onClick = { scope.launch { drawerState.open() } },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color(0xFF2E7D32), 
+                            contentColor = Color.White
+                        )
+                    ) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF1B5E20), 
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                ),
                 actions = {
-                    // Scan product button
                     IconButton(
                         onClick = {
                             navController.navigate(ScreenRoutes.ScanProductScreen.route)
                         },
                         colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = Color(0xFF1B5E20), // BNEDER primary green
+                            containerColor = Color(0xFF1B5E20), 
                             contentColor = Color.White
                         )
                     ) {
@@ -193,7 +201,6 @@ fun ProductScreen(
                         )
                     }
 
-                    // Filter button
                     Box {
                         IconButton(onClick = { showFilterMenu = true }) {
                             Icon(
@@ -205,7 +212,6 @@ fun ProductScreen(
                             expanded = showFilterMenu,
                             onDismissRequest = { showFilterMenu = false }
                         ) {
-                            // Option to show all products
                             DropdownMenuItem(
                                 text = { Text(stringResource(id = R.string.all_structures)) },
                                 onClick = {
@@ -230,20 +236,31 @@ fun ProductScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                isAddingProduct.value = true
-                editingProduct.value = null
-                name.value = ""
-                price.value = ""
-                label.value = ""
-                quantity.value = ""
-                minQuantity.value = ""
-                maxQuantity.value = ""
-                selectedStructure.value = null
-                selectedAccessories.value = emptySet()
-                selectedPersonnel.value = null
-            }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Ajouter Matériels et équipements")
+            FloatingActionButton(
+                onClick = {
+                    isAddingProduct.value = true
+                    editingProduct.value = null
+                    name.value = ""
+                    price.value = ""
+                    label.value = ""
+                    quantity.value = ""
+                    minQuantity.value = ""
+                    maxQuantity.value = ""
+                    selectedStructure.value = null
+                    selectedAccessories.value = emptySet()
+                    selectedPersonnel.value = null
+                },
+                containerColor = Color(0xFF1B5E20), 
+                contentColor = Color.White,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 4.dp,
+                    pressedElevation = 8.dp
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Ajouter Matériels et équipements"
+                )
             }
         }
     ) { paddingValues ->
@@ -313,8 +330,17 @@ fun ProductScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     ElevatedCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 2.dp,
+                            pressedElevation = 4.dp
+                        ),
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = Color.White,
+                            contentColor = Color(0xFF212121) 
+                        )
                     ) {
                         Column(
                             modifier = Modifier
@@ -500,70 +526,170 @@ fun ProductScreen(
                                 isAddingProduct.value = true
                             }
 
+                            val cardBackground = if (isSystemInDarkTheme()) {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.surface
+                            }
+                            
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(8.dp)
-                                    .clickable { openEditor() },
+                                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                                    .clickable { openEditor() }
+                                    .shadow(
+                                        elevation = 1.dp,
+                                        shape = RoundedCornerShape(12.dp)
+                                    ),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = primaryLight.copy(alpha = 0.12f)
+                                    containerColor = cardBackground
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(
+                                    0.5.dp,
+                                    MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                                 )
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .padding(16.dp)
-                                        .fillMaxWidth(),
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(text = product.name)
+                                        Text(
+                                            text = product.name,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        
                                         if (product.label.isNotEmpty()) {
-                                            Text(text = product.label, style = MaterialTheme.typography.bodySmall)
-                                        }
-                                        product.structureName?.let { structure ->
-                                            Text(text = stringResource(id = R.string.filtered_by_structure, structure))
-                                        }
-                                        product.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { assignee ->
                                             Text(
-                                                text = "Affecté à : $assignee",
-                                                style = MaterialTheme.typography.bodySmall
+                                                text = product.label,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         }
+                                        
+                                        product.structureName?.let { structure ->
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(top = 2.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Business,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = structure,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                        
+                                        product.assignedPersonnelName?.takeIf { it.isNotBlank() }?.let { assignee ->
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(top = 2.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Person,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = "Affecté à : $assignee",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
                                     }
+                                    
                                     Box {
-                                        IconButton(onClick = { isMenuExpanded = true }) {
+                                        IconButton(
+                                            onClick = { isMenuExpanded = true },
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                        ) {
                                             Icon(
                                                 imageVector = Icons.Default.MoreVert,
-                                                contentDescription = "More Options"
+                                                contentDescription = "Options",
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(20.dp)
                                             )
                                         }
                                         DropdownMenu(
                                             expanded = isMenuExpanded,
-                                            onDismissRequest = { isMenuExpanded = false }
+                                            onDismissRequest = { isMenuExpanded = false },
+                                            modifier = Modifier
+                                                .width(200.dp)
+                                                .background(MaterialTheme.colorScheme.surfaceContainer)
                                         ) {
                                             DropdownMenuItem(
-                                                text = { Text("Modifier") },
+                                                text = { 
+                                                    Text(
+                                                        "Modifier",
+                                                        style = MaterialTheme.typography.bodyLarge,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    ) 
+                                                },
                                                 leadingIcon = {
                                                     Icon(
                                                         imageVector = Icons.Default.Edit,
                                                         contentDescription = null,
-                                                        tint = primaryContainerLight
+                                                        tint = MaterialTheme.colorScheme.primary
                                                     )
                                                 },
+                                                colors = MenuDefaults.itemColors(
+                                                    textColor = MaterialTheme.colorScheme.onSurface,
+                                                    leadingIconColor = MaterialTheme.colorScheme.primary,
+                                                    trailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                                    disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                                                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                                                ),
                                                 onClick = {
                                                     isMenuExpanded = false
                                                     openEditor()
                                                 }
                                             )
+                                            
                                             DropdownMenuItem(
-                                                text = { Text("Supprimer", color = errorLight) },
+                                                text = { 
+                                                    Text(
+                                                        "Supprimer",
+                                                        style = MaterialTheme.typography.bodyLarge,
+                                                        color = MaterialTheme.colorScheme.error
+                                                    ) 
+                                                },
                                                 leadingIcon = {
                                                     Icon(
                                                         imageVector = Icons.Default.Delete,
                                                         contentDescription = null,
-                                                        tint = errorLight
+                                                        tint = MaterialTheme.colorScheme.error
                                                     )
                                                 },
+                                                colors = MenuDefaults.itemColors(
+                                                    textColor = MaterialTheme.colorScheme.error,
+                                                    leadingIconColor = MaterialTheme.colorScheme.error,
+                                                    disabledTextColor = MaterialTheme.colorScheme.error.copy(alpha = 0.38f),
+                                                    disabledLeadingIconColor = MaterialTheme.colorScheme.error.copy(alpha = 0.38f)
+                                                ),
                                                 onClick = {
                                                     isMenuExpanded = false
                                                     productViewModel.delete(product)
@@ -601,23 +727,26 @@ fun ProductForm(
     onSave: () -> Unit
 ) {
     val context = LocalContext.current
-    val accessoryGroups = remember { AccessoryType.values().toList().chunked(3) }
+    val accessoryGroups = remember { AccessoryType.entries.chunked(3) }
 
-    // Barcode scanning launcher setup
     val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
-            // Set the scanned result as the product name
             name.value = result.contents
             Toast.makeText(context, "Scanned: ${result.contents}", Toast.LENGTH_SHORT).show()
         }
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+            .navigationBarsPadding()
+            .imePadding(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Scan button above product name input
-        Button(
+        OutlinedButton(
             onClick = {
                 val options = ScanOptions().apply {
                     setPrompt("Scan un Matériel ou équipement barcode")
@@ -628,40 +757,89 @@ fun ProductForm(
                 }
                 scanLauncher.launch(options)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.primary,
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            border = BorderStroke(
+                1.dp,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+            )
         ) {
             Icon(
                 imageVector = Icons.Default.QrCodeScanner,
-                contentDescription = "Scan Barcode"
+                contentDescription = "Scan Barcode",
+                modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Scan Barcode")
+            Text("Scanner le code-barres")
         }
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = name.value,
             onValueChange = { name.value = it },
-            label = { Text("Nom Matériels ou équipements") },
-            modifier = Modifier.fillMaxWidth()
+            label = { 
+                Text(
+                    "Nom Matériels ou équipements",
+                    style = MaterialTheme.typography.bodyLarge
+                ) 
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                cursorColor = MaterialTheme.colorScheme.primary
+            ),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = label.value,
             onValueChange = { label.value = it },
-            label = { Text("Labelle du Matériels ou équipements ") },
-            modifier = Modifier.fillMaxWidth()
+            label = { 
+                Text(
+                    "Labelle du Matériels ou équipements",
+                    style = MaterialTheme.typography.bodyLarge
+                ) 
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                cursorColor = MaterialTheme.colorScheme.primary
+            ),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(8.dp))
 
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f))
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
                 text = "Accessoires",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 4.dp)
             )
             accessoryGroups.forEach { rowTypes ->
                 Row(
@@ -699,46 +877,9 @@ fun ProductForm(
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        // OutlinedTextField(
-        //     value = price.value,
-        //     onValueChange = { price.value = it },
-        //     label = { Text("Price") },
-        //     modifier = Modifier.fillMaxWidth(),
-        //     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-        // )
-        // Spacer(modifier = Modifier.height(8.dp))
-
-        // // Quantity fields
-        // OutlinedTextField(
-        //     value = quantity.value,
-        //     onValueChange = { quantity.value = it },
-        //     label = { Text("Quantity") },
-        //     modifier = Modifier.fillMaxWidth(),
-        //     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        // )
-        // Spacer(modifier = Modifier.height(8.dp))
-
-        // OutlinedTextField(
-        //     value = minQuantity.value,
-        //     onValueChange = { minQuantity.value = it },
-        //     label = { Text("Minimum Quantity") },
-        //     modifier = Modifier.fillMaxWidth(),
-        //     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        // )
-        // Spacer(modifier = Modifier.height(8.dp))
-
-        // OutlinedTextField(
-        //     value = maxQuantity.value,
-        //     onValueChange = { maxQuantity.value = it },
-        //     label = { Text("Maximum Quantity") },
-        //     modifier = Modifier.fillMaxWidth(),
-        //     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        // )
-        Spacer(modifier = Modifier.height(8.dp))
-
         val structures = remember(availableStructures) { availableStructures }
         var expanded by remember { mutableStateOf(false) }
-        val selectedStructureName = selectedStructure.value ?: "Choisir une structure"
+        val selectedStructureNameValue = selectedStructure.value ?: "Choisir une structure"
         val selectedPersonnelValue = selectedPersonnel.value
         val filteredPersonnel by remember(selectedStructure.value, availablePersonnel, selectedPersonnelValue) {
             derivedStateOf {
@@ -777,17 +918,42 @@ fun ProductForm(
         ) {
             OutlinedTextField(
                 modifier = Modifier
-                    .menuAnchor()
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                     .fillMaxWidth(),
-                value = selectedStructureName,
+                value = selectedStructureNameValue,
                 onValueChange = {},
-                label = { Text("Structure") },
+                label = { 
+                    Text(
+                        "Structure",
+                        style = MaterialTheme.typography.bodyLarge
+                    ) 
+                },
                 readOnly = true,
                 enabled = structures.isNotEmpty(),
                 trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = expanded
+                    )
                 },
-                colors = ExposedDropdownMenuDefaults.textFieldColors()
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                    disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    errorCursorColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error,
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorTrailingIconColor = MaterialTheme.colorScheme.error,
+                    errorLeadingIconColor = MaterialTheme.colorScheme.error
+                ),
+                textStyle = MaterialTheme.typography.bodyLarge,
+                shape = RoundedCornerShape(12.dp)
             )
 
             ExposedDropdownMenu(
@@ -826,17 +992,42 @@ fun ProductForm(
         ) {
             OutlinedTextField(
                 modifier = Modifier
-                    .menuAnchor()
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                     .fillMaxWidth(),
                 value = selectedPersonnelName,
                 onValueChange = {},
-                label = { Text("Personnel") },
+                label = { 
+                    Text(
+                        "Personnel",
+                        style = MaterialTheme.typography.bodyLarge
+                    ) 
+                },
                 readOnly = true,
                 enabled = filteredPersonnel.isNotEmpty(),
                 trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = personnelExpanded)
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = personnelExpanded
+                    )
                 },
-                colors = ExposedDropdownMenuDefaults.textFieldColors()
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                    disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    errorCursorColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error,
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorTrailingIconColor = MaterialTheme.colorScheme.error,
+                    errorLeadingIconColor = MaterialTheme.colorScheme.error
+                ),
+                textStyle = MaterialTheme.typography.bodyLarge,
+                shape = RoundedCornerShape(12.dp)
             )
 
             ExposedDropdownMenu(
@@ -866,17 +1057,38 @@ fun ProductForm(
         }
 
         if (isPersonnelLoading) {
-            Spacer(modifier = Modifier.height(8.dp))
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.primaryContainer
+            )
         }
 
         personnelError?.let { errorMessage ->
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = errorMessage,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ErrorOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = errorMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
         }
 
         if (!isPersonnelLoading && filteredPersonnel.isEmpty()) {
@@ -895,34 +1107,58 @@ fun ProductForm(
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Actualiser le personnel button (Orange)
-            Button(
+            OutlinedButton(
                 onClick = onRefreshPersonnel,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFF9800), // Orange color
-                    contentColor = Color.White
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
-                modifier = Modifier.weight(1f).padding(end = 4.dp)
+                border = BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                ),
+                shape = RoundedCornerShape(12.dp)
             ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("Actualiser")
             }
 
-            // Enregistrer button (Red)
             Button(
                 onClick = onSave,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFF44336), // Red color
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                modifier = Modifier.weight(1f).padding(start = 4.dp)
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 0.dp,
+                    pressedElevation = 2.dp,
+                    disabledElevation = 0.dp
+                )
             ) {
+                Icon(
+                    imageVector = Icons.Default.Save,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("Enregistrer")
             }
         }
 
-        // Show message if deliverer not selected
         if (selectedStructure.value.isNullOrEmpty() && structures.isNotEmpty()) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -931,5 +1167,29 @@ fun ProductForm(
                 color = MaterialTheme.colorScheme.error
             )
         }
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun ProductFormPreview() {
+    MaterialTheme {
+        ProductForm(
+            name = remember { mutableStateOf("Computer") },
+            price = remember { mutableStateOf("1000") },
+            label = remember { mutableStateOf("BNEDER-2024-001") },
+            quantity = remember { mutableStateOf("10") },
+            minQuantity = remember { mutableStateOf("5") },
+            maxQuantity = remember { mutableStateOf("20") },
+            selectedStructure = remember { mutableStateOf("IT") },
+            selectedPersonnel = remember { mutableStateOf(PersonnelListItem(1, "John Doe", "IT")) },
+            selectedAccessories = remember { mutableStateOf(emptySet()) },
+            availableStructures = listOf("IT", "HR", "Finance"),
+            availablePersonnel = listOf(PersonnelListItem(1, "John Doe", "IT")),
+            isPersonnelLoading = false,
+            personnelError = null,
+            onRefreshPersonnel = {},
+            onSave = {}
+        )
     }
 }
