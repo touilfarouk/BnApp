@@ -1,11 +1,16 @@
 package com.farouktouil.farouktouil.core.presentation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,12 +28,37 @@ import com.farouktouil.farouktouil.product_feature.presentation.BarcodeScannerSc
 import com.farouktouil.farouktouil.product_feature.presentation.ScanProductScreen
 import com.farouktouil.farouktouil.product_feature.presentation.ProductDetailsScreen
 import com.farouktouil.farouktouil.product_feature.presentation.ProductScreen
+import com.farouktouil.farouktouil.core.util.OnboardingPrefs
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 
 @Composable
 fun Navigation() {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val onboardingCompletedState = produceState<Boolean?>(initialValue = null) {
+        OnboardingPrefs.isCompletedFlow(context).collect { value = it }
+    }
+    val onboardingCompleted = onboardingCompletedState.value
+
+    if (onboardingCompleted == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val startDestination = if (onboardingCompleted) {
+        ScreenRoutes.AffectationScreen.route
+    } else {
+        ScreenRoutes.OnboardingScreen.route
+    }
 
     ModalNavigationDrawer(
         modifier = Modifier.fillMaxHeight(),
@@ -40,8 +70,28 @@ fun Navigation() {
     ) {
         NavHost(
             navController,
-            startDestination = ScreenRoutes.AffectationScreen.route
+            startDestination = startDestination
         ) {
+            composable(ScreenRoutes.OnboardingScreen.route) {
+                OnboardingScreen(
+                    onSkip = {
+                        scope.launch {
+                            OnboardingPrefs.setCompleted(context, true)
+                            navController.navigate(ScreenRoutes.AffectationScreen.route) {
+                                popUpTo(ScreenRoutes.OnboardingScreen.route) { inclusive = true }
+                            }
+                        }
+                    },
+                    onFinish = {
+                        scope.launch {
+                            OnboardingPrefs.setCompleted(context, true)
+                            navController.navigate(ScreenRoutes.AffectationScreen.route) {
+                                popUpTo(ScreenRoutes.OnboardingScreen.route) { inclusive = true }
+                            }
+                        }
+                    }
+                )
+            }
             composable(ScreenRoutes.AffectationScreen.route) {
                 AffectationScreen(navController = navController, drawerState = drawerState, scope = scope)
             }
@@ -165,6 +215,7 @@ fun Navigation() {
 }
 
 sealed class ScreenRoutes(val route: String) {
+    object OnboardingScreen:ScreenRoutes("onboarding_screen")
     object AffectationScreen : ScreenRoutes("affectation_screen")
     object OrderChooseStructureScreen:ScreenRoutes("order_choose_structure_screen")
     object OrderChooseProductsScreen:ScreenRoutes("order_choose_products_screen")
