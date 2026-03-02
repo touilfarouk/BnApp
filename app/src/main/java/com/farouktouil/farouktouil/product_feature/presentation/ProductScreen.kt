@@ -153,11 +153,11 @@ fun ProductScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                modifier = Modifier.height(64.dp), 
                 title = {
                     Column {
                         Text(
                             stringResource(id = R.string.products),
+                            style = MaterialTheme.typography.titleLarge,
                             color = Color.White
                         )
                         selectedStructureName?.takeIf { it.isNotBlank() }?.let { name ->
@@ -173,7 +173,7 @@ fun ProductScreen(
                     IconButton(
                         onClick = { scope.launch { drawerState.open() } },
                         colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = Color(0xFF2E7D32), 
+                            containerColor = Color(0xFF1B5E20),
                             contentColor = Color.White
                         )
                     ) {

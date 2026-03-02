@@ -90,12 +90,29 @@ fun BarcodeGeneratorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.barcode_generator)) },
+                title = {
+                    Text(
+                        stringResource(R.string.barcode_generator),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = androidx.compose.ui.graphics.Color.White
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                    IconButton(
+                        onClick = { scope.launch { drawerState.open() } },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = androidx.compose.ui.graphics.Color(0xFF1B5E20),
+                            contentColor = androidx.compose.ui.graphics.Color.White
+                        )
+                    ) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = stringResource(R.string.menu))
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = androidx.compose.ui.graphics.Color(0xFF1B5E20),
+                    titleContentColor = androidx.compose.ui.graphics.Color.White,
+                    actionIconContentColor = androidx.compose.ui.graphics.Color.White
+                )
             )
         },
         floatingActionButton = {

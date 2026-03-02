@@ -62,13 +62,29 @@ fun NewsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.news_screen_title)) },
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.news_screen_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = androidx.compose.ui.graphics.Color.White
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                    IconButton(
+                        onClick = { scope.launch { drawerState.open() } },
+                        colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
+                            containerColor = androidx.compose.ui.graphics.Color(0xFF1B5E20),
+                            contentColor = androidx.compose.ui.graphics.Color.White
+                        )
+                    ) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = stringResource(id = R.string.menu))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors()
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = androidx.compose.ui.graphics.Color(0xFF1B5E20),
+                    titleContentColor = androidx.compose.ui.graphics.Color.White,
+                    actionIconContentColor = androidx.compose.ui.graphics.Color.White
+                )
             )
         }
     ) { paddingValues ->

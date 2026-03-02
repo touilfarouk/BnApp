@@ -82,7 +82,13 @@ fun AffectationScreen(
             },
             topBar = {
                 TopAppBar(
-                    title = { Text("Liste des affectations") },
+                    title = {
+                        Text(
+                            "Liste des affectations",
+                            style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                            color = Color.White
+                        )
+                    },
                     navigationIcon = {
                         IconButton(
                             onClick = { scope.launch { drawerState.open() } },
@@ -93,7 +99,12 @@ fun AffectationScreen(
                         ) {
                             Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
                         }
-                    }
+                    },
+                    colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color(0xFF1B5E20),
+                        titleContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    )
                 )
             }
         ) { paddingValues ->
@@ -122,11 +133,11 @@ fun AffectationScreen(
                         Color(0xFFA6FFAF)
                     )
                 )
-
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
+                        .padding(top = 8.dp)
                         .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
