@@ -104,7 +104,7 @@
 
     <!-- Écrans divers -->
     <string name="personnel_screen_title">Notre Personnel</string>
-    <string name="consultation_screen_title">Appels de Consultation</string>
+    <string name="consultation_screen_title">Appels a Consultation</string>
     <string name="open_navigation_drawer">Ouvrir le tiroir de navigation</string>
     <string name="error_generic">Une erreur est survenue</string>
     <string name="retry">Réessayer</string>
