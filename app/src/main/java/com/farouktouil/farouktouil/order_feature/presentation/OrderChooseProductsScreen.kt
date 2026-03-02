@@ -2,6 +2,7 @@ package com.farouktouil.farouktouil.order_feature.presentation
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -85,12 +86,16 @@ fun OrderChooseProductsScreen(
     LaunchedEffect(exportState.isShareRequested, exportState.exportFilePath) {
         if (exportState.isShareRequested) {
             exportState.exportFilePath?.let { path ->
-                val file = File(path)
-                val uri = FileProvider.getUriForFile(
-                    context,
-                    context.applicationContext.packageName + ".provider",
-                    file
-                )
+                val uri = if (path.startsWith("content://")) {
+                    Uri.parse(path)
+                } else {
+                    val file = File(path)
+                    FileProvider.getUriForFile(
+                        context,
+                        context.applicationContext.packageName + ".provider",
+                        file
+                    )
+                }
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/csv"
                     putExtra(Intent.EXTRA_SUBJECT, "Affectations exportées")
