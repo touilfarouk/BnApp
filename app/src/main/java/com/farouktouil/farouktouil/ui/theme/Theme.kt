@@ -337,23 +337,15 @@ fun FaroukTouilTheme(
       SideEffect {
         val window = (view.context as Activity).window
 
-        // Set status bar color based on theme for better readability
-        val statusBarColor = when {
-          darkTheme -> surfaceDark.copy(alpha = 0.95f) // Slightly transparent dark surface
-          else -> surfaceLight.copy(alpha = 0.95f) // Slightly transparent light surface
-        }
-
-        window.statusBarColor = statusBarColor.toArgb()
+        // Fully transparent system bars for true edge-to-edge
+        window.statusBarColor = Color.Transparent.toArgb()
 
         // Configure status bar appearance for better icon visibility
         val insetsController = WindowCompat.getInsetsController(window, view)
         insetsController.isAppearanceLightStatusBars = !darkTheme
 
         // Handle navigation bar for edge-to-edge
-        window.navigationBarColor = when {
-          darkTheme -> surfaceDark.copy(alpha = 0.95f).toArgb()
-          else -> surfaceLight.copy(alpha = 0.95f).toArgb()
-        }
+        window.navigationBarColor = Color.Transparent.toArgb()
         insetsController.isAppearanceLightNavigationBars = !darkTheme
       }
     }
