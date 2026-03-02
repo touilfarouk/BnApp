@@ -1,6 +1,8 @@
 package com.farouktouil.farouktouil.export_feature.presentation
 
 import android.content.Intent
+import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
@@ -16,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.IosShare
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -38,6 +41,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 
 import java.io.File
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -161,19 +165,56 @@ fun ExportScreen(
             }
 
             AnimatedVisibility(visible = fileExportState.isSharedDataReady) {
-                Button(
-                    onClick = { 
-                        exportViewModel.generateExportFile()
-                    },
+                Column(
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .padding(vertical = 16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF1B5E20), // BNEDER primary green
-                        contentColor = Color.White
-                    )
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Export")
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Export succès",
+                        tint = Color(0xFF1B5E20)
+                    )
+
+                    Text(
+                        text = "Export réussi !",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1B5E20),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = "Fichier enregistré dans Téléchargements/OrderApp.",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center
+                    )
+                    Button(
+                        onClick = {
+                            val initialUri =
+                                "content://com.android.externalstorage.documents/document/primary:Download/OrderApp".toUri()
+                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+                                putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
+                                addFlags(
+                                    Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                )
+                            }
+                            ContextCompat.startActivity(
+                                context,
+                                Intent.createChooser(intent, "Ouvrir le dossier"),
+                                null
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF1B5E20),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Ouvrir le dossier")
+                    }
                 }
             }
         }
